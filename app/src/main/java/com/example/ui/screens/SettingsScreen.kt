@@ -20,6 +20,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AdminPanelSettings
+import androidx.compose.material.icons.filled.ContactSupport
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Payment
 import androidx.compose.material.icons.filled.VolumeUp
@@ -34,16 +36,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ui.components.TobiGtHeader
-import com.example.ui.theme.CyberCyan
+import com.example.ui.theme.DiamondBg
+import com.example.ui.theme.DiamondBlue
+import com.example.ui.theme.DiamondBorder
+import com.example.ui.theme.DiamondCyan
+import com.example.ui.theme.LaserGreen
 import com.example.ui.theme.NeonAmber
 import com.example.ui.theme.SpaceCardBg
 import com.example.ui.theme.SpaceCardBorder
+import com.example.ui.theme.SpaceCardElevated
 import com.example.ui.theme.SpaceDarkBg
 import com.example.ui.theme.SpaceTextMuted
 import com.example.ui.theme.SpaceTextPrimary
@@ -58,6 +66,8 @@ fun SettingsScreen(
     onToggleTestPayment: () -> Unit,
     onNavigateAdmin: () -> Unit,
     onNavigatePlayConsoleDocs: () -> Unit,
+    onNavigatePrivacyPolicy: () -> Unit = {},
+    onNavigateContact: () -> Unit = {},
     onBack: () -> Unit
 ) {
     Column(
@@ -93,6 +103,7 @@ fun SettingsScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
+                        .shadow(1.dp, RoundedCornerShape(12.dp), spotColor = Color(0x10000000))
                         .border(1.dp, SpaceCardBorder, RoundedCornerShape(12.dp)),
                     colors = CardDefaults.cardColors(containerColor = SpaceCardBg)
                 ) {
@@ -105,7 +116,7 @@ fun SettingsScreen(
                             Icon(
                                 imageVector = Icons.Default.VolumeUp,
                                 contentDescription = null,
-                                tint = CyberCyan,
+                                tint = DiamondBlue,
                                 modifier = Modifier.size(22.dp)
                             )
                             Spacer(modifier = Modifier.width(12.dp))
@@ -128,8 +139,8 @@ fun SettingsScreen(
                             checked = isSoundEnabled,
                             onCheckedChange = { onToggleSound() },
                             colors = SwitchDefaults.colors(
-                                checkedThumbColor = CyberCyan,
-                                checkedTrackColor = Color(0xFF0C4A6E)
+                                checkedThumbColor = Color.White,
+                                checkedTrackColor = DiamondBlue
                             ),
                             modifier = Modifier.testTag("sound_toggle_switch")
                         )
@@ -153,6 +164,7 @@ fun SettingsScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(12.dp))
+                        .shadow(1.dp, RoundedCornerShape(12.dp), spotColor = Color(0x10000000))
                         .border(1.dp, SpaceCardBorder, RoundedCornerShape(12.dp)),
                     colors = CardDefaults.cardColors(containerColor = SpaceCardBg)
                 ) {
@@ -191,8 +203,8 @@ fun SettingsScreen(
                             checked = isTestPaymentMode,
                             onCheckedChange = { onToggleTestPayment() },
                             colors = SwitchDefaults.colors(
-                                checkedThumbColor = NeonAmber,
-                                checkedTrackColor = Color(0xFF78350F)
+                                checkedThumbColor = Color.White,
+                                checkedTrackColor = NeonAmber
                             ),
                             modifier = Modifier.testTag("test_payment_toggle_switch")
                         )
@@ -215,7 +227,8 @@ fun SettingsScreen(
                 Surface(
                     color = SpaceCardBg,
                     shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, CyberCyan.copy(alpha = 0.5f)),
+                    border = BorderStroke(1.dp, DiamondBorder),
+                    shadowElevation = 1.dp,
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { onNavigateAdmin() }
@@ -228,7 +241,7 @@ fun SettingsScreen(
                         Icon(
                             imageVector = Icons.Default.AdminPanelSettings,
                             contentDescription = null,
-                            tint = CyberCyan,
+                            tint = DiamondBlue,
                             modifier = Modifier.size(22.dp)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
@@ -240,14 +253,14 @@ fun SettingsScreen(
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = "Economy circulation, ledger audit, coin adjustments & refunds",
+                                text = "Diamond circulation, ledger audit, adjustments & refunds",
                                 color = SpaceTextMuted,
                                 fontSize = 11.sp
                             )
                         }
                         Text(
                             text = "ACCESS →",
-                            color = CyberCyan,
+                            color = DiamondBlue,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -260,6 +273,7 @@ fun SettingsScreen(
                     color = SpaceCardBg,
                     shape = RoundedCornerShape(12.dp),
                     border = BorderStroke(1.dp, SpaceCardBorder),
+                    shadowElevation = 1.dp,
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { onNavigatePlayConsoleDocs() }
@@ -272,7 +286,7 @@ fun SettingsScreen(
                         Icon(
                             imageVector = Icons.Default.MenuBook,
                             contentDescription = null,
-                            tint = Color(0xFF34D399),
+                            tint = LaserGreen,
                             modifier = Modifier.size(22.dp)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
@@ -291,7 +305,108 @@ fun SettingsScreen(
                         }
                         Text(
                             text = "VIEW →",
-                            color = Color(0xFF34D399),
+                            color = LaserGreen,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+
+            // Legal & Support Section
+            item {
+                Text(
+                    text = "LEGAL & DEVELOPER SUPPORT",
+                    color = SpaceTextMuted,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp
+                )
+            }
+
+            item {
+                Surface(
+                    color = SpaceCardBg,
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, SpaceCardBorder),
+                    shadowElevation = 1.dp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onNavigatePrivacyPolicy() }
+                        .testTag("settings_privacy_policy_btn")
+                ) {
+                    Row(
+                        modifier = Modifier.padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Lock,
+                            contentDescription = null,
+                            tint = DiamondBlue,
+                            modifier = Modifier.size(22.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Privacy Policy",
+                                color = SpaceTextPrimary,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "Anonymous user architecture and data safety overview",
+                                color = SpaceTextMuted,
+                                fontSize = 11.sp
+                            )
+                        }
+                        Text(
+                            text = "READ →",
+                            color = DiamondBlue,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+
+            item {
+                Surface(
+                    color = SpaceCardBg,
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, SpaceCardBorder),
+                    shadowElevation = 1.dp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onNavigateContact() }
+                        .testTag("settings_contact_btn")
+                ) {
+                    Row(
+                        modifier = Modifier.padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ContactSupport,
+                            contentDescription = null,
+                            tint = Color(0xFF0284C7),
+                            modifier = Modifier.size(22.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Contact Developer",
+                                color = SpaceTextPrimary,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "sakibulhasanmd69@gmail.com • Developed by Tobi",
+                                color = SpaceTextMuted,
+                                fontSize = 11.sp
+                            )
+                        }
+                        Text(
+                            text = "CONTACT →",
+                            color = Color(0xFF0284C7),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -302,18 +417,20 @@ fun SettingsScreen(
             // Build Details
             item {
                 Surface(
-                    color = Color(0xFF0F172A),
+                    color = SpaceCardElevated,
                     shape = RoundedCornerShape(10.dp),
                     border = BorderStroke(1.dp, SpaceCardBorder),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(modifier = Modifier.padding(14.dp)) {
-                        Text(text = "TOBI GT PRODUCTION BUILD v1.0.0", color = SpaceTextSecondary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text(text = "TOBI GT PRODUCTION BUILD v1.0.0", color = SpaceTextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text(text = "Developed by Tobi • sakibulhasanmd69@gmail.com", color = DiamondCyan, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
                         Text(text = "Application ID: com.aistudio.tobigt.skyg", color = SpaceTextMuted, fontSize = 10.sp)
-                        Text(text = "Architecture: Room DB + Jetpack Compose + Play Billing Architecture", color = SpaceTextMuted, fontSize = 10.sp)
+                        Text(text = "Architecture: Room DB + Jetpack Compose + Google Play Billing", color = SpaceTextMuted, fontSize = 10.sp)
                     }
                 }
             }
         }
     }
 }
+

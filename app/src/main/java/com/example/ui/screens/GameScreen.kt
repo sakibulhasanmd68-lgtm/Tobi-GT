@@ -24,14 +24,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ElectricBolt
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.MonetizationOn
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -40,6 +36,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -50,9 +47,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -65,6 +63,7 @@ import com.example.game.GameStatus
 import com.example.game.PowerUpType
 import com.example.ui.components.CyberButton
 import com.example.ui.theme.CyberCyan
+import com.example.ui.theme.DiamondCyan
 import com.example.ui.theme.NeonAmber
 import com.example.ui.theme.NeonCrimson
 import com.example.ui.theme.NeonGold
@@ -75,6 +74,14 @@ import com.example.ui.theme.SpaceTextMuted
 import com.example.ui.theme.SpaceTextPrimary
 import com.example.ui.theme.SpaceTextSecondary
 
+private class PrecomputedStar(
+    val xFrac: Float,
+    val yOffsetFrac: Float,
+    val speedFactor: Float,
+    val radius: Float,
+    val alpha: Float
+)
+
 @Composable
 fun GameScreen(
     gameAudio: GameAudio,
@@ -82,7 +89,7 @@ fun GameScreen(
     onGameFinished: (score: Int, enemiesKilled: Int, bossesKilled: Int, coinsCollected: Int) -> Unit,
     onExitHome: () -> Unit
 ) {
-    var frameTick by remember { mutableStateOf(0L) }
+    var frameTick by remember { mutableLongStateOf(0L) }
 
     val engine = remember {
         GameEngine(
@@ -116,8 +123,12 @@ fun GameScreen(
             engine.initGame(widthPx, heightPx)
         }
 
-        // Canvas Game Renderer & Touch Controller
-        Canvas(
+        // Isolated high-performance Canvas view with zero heap allocations per frame
+        GameCanvasRenderer(
+            engine = engine,
+            frameTick = frameTick,
+            widthPx = widthPx,
+            heightPx = heightPx,
             modifier = Modifier
                 .fillMaxSize()
                 .pointerInput(Unit) {
@@ -129,206 +140,11 @@ fun GameScreen(
                         )
                     }
                 }
-        ) {
-            val unused = frameTick // Trigger redraw each frame
-
-            // 1. Scrolling Starfield / Atmosphere
-            val starCount = 35
-            for (i in 0 until starCount) {
-                val seed = i * 137L
-                val starY = ((seed * 73L + (frameTick / 16000000L) * (1 + (i % 3))) % heightPx.toLong()).toFloat()
-                val starX = (seed * 97L % widthPx.toLong()).toFloat()
-                val starRadius = if (i % 3 == 0) 2.2f else 1.2f
-                val starAlpha = if (i % 2 == 0) 0.8f else 0.4f
-                drawCircle(
-                    color = Color.White.copy(alpha = starAlpha),
-                    radius = starRadius,
-                    center = Offset(starX, starY)
-                )
-            }
-
-            // 2. Render PowerUps
-            for (pu in engine.powerUps) {
-                val puColor = when (pu.type) {
-                    PowerUpType.TRIPLE_SHOT -> CyberCyan
-                    PowerUpType.SHIELD -> Color(0xFF38BDF8)
-                    PowerUpType.SPEED_BOOST -> NeonGold
-                    PowerUpType.EMP_BOMB -> NeonCrimson
-                }
-                drawCircle(color = puColor.copy(alpha = 0.3f), radius = pu.radius * 1.4f, center = Offset(pu.x, pu.y))
-                drawCircle(color = puColor, radius = pu.radius, center = Offset(pu.x, pu.y))
-                drawCircle(color = Color.White, radius = pu.radius * 0.4f, center = Offset(pu.x, pu.y))
-            }
-
-            // 3. Render Collectible Coins
-            for (coin in engine.coins) {
-                // Gold outer glow
-                drawCircle(color = NeonGold.copy(alpha = 0.4f), radius = coin.radius * 1.3f, center = Offset(coin.x, coin.y))
-                drawCircle(color = NeonGold, radius = coin.radius, center = Offset(coin.x, coin.y))
-                drawCircle(color = Color(0xFFFEF08A), radius = coin.radius * 0.5f, center = Offset(coin.x, coin.y))
-            }
-
-            // 4. Render Lasers
-            for (laser in engine.lasers) {
-                drawCircle(
-                    color = laser.color,
-                    radius = laser.radius,
-                    center = Offset(laser.x, laser.y)
-                )
-                // Laser beam trail
-                val trailLen = if (laser.isEnemy) 12f else 18f
-                drawLine(
-                    color = laser.color.copy(alpha = 0.6f),
-                    start = Offset(laser.x, laser.y),
-                    end = Offset(laser.x - laser.vx * 0.5f, laser.y - laser.vy * 0.8f),
-                    strokeWidth = laser.radius * 1.5f
-                )
-            }
-
-            // 5. Render Enemies & Boss
-            for (enemy in engine.enemies) {
-                when (enemy.type) {
-                    EnemyType.SCOUT -> {
-                        // Agile diamond drone
-                        val p = Path().apply {
-                            moveTo(enemy.x, enemy.y + enemy.height / 2f)
-                            lineTo(enemy.x - enemy.width / 2f, enemy.y)
-                            lineTo(enemy.x, enemy.y - enemy.height / 2f)
-                            lineTo(enemy.x + enemy.width / 2f, enemy.y)
-                            close()
-                        }
-                        drawPath(p, color = Color(0xFFF97316))
-                        drawCircle(color = Color(0xFFFFE4E6), radius = 4f, center = Offset(enemy.x, enemy.y))
-                    }
-                    EnemyType.FIGHTER -> {
-                        // Delta wing enemy fighter
-                        val p = Path().apply {
-                            moveTo(enemy.x, enemy.y + enemy.height / 2f)
-                            lineTo(enemy.x + enemy.width / 2f, enemy.y - enemy.height / 2f)
-                            lineTo(enemy.x, enemy.y - enemy.height / 4f)
-                            lineTo(enemy.x - enemy.width / 2f, enemy.y - enemy.height / 2f)
-                            close()
-                        }
-                        drawPath(p, color = NeonCrimson)
-                        drawCircle(color = NeonAmber, radius = 5f, center = Offset(enemy.x, enemy.y - 4f))
-                    }
-                    EnemyType.BOMBER -> {
-                        // Heavy armored gunship
-                        drawRoundRect(
-                            color = Color(0xFF7C3AED),
-                            topLeft = Offset(enemy.x - enemy.width / 2f, enemy.y - enemy.height / 2f),
-                            size = Size(enemy.width, enemy.height),
-                            cornerRadius = CornerRadius(10f, 10f)
-                        )
-                        // Armor plates
-                        drawCircle(color = Color(0xFFC084FC), radius = 10f, center = Offset(enemy.x, enemy.y))
-                    }
-                    EnemyType.ASTEROID -> {
-                        drawCircle(
-                            color = Color(0xFF64748B),
-                            radius = enemy.width / 2f,
-                            center = Offset(enemy.x, enemy.y)
-                        )
-                        drawCircle(
-                            color = Color(0xFF94A3B8),
-                            radius = enemy.width * 0.3f,
-                            center = Offset(enemy.x - 6f, enemy.y - 6f)
-                        )
-                    }
-                    EnemyType.BOSS -> {
-                        // TITAN GT-01 Dreadnought
-                        val bw = enemy.width
-                        val bh = enemy.height
-                        val bossPath = Path().apply {
-                            moveTo(enemy.x, enemy.y + bh * 0.45f)
-                            lineTo(enemy.x + bw * 0.45f, enemy.y + bh * 0.15f)
-                            lineTo(enemy.x + bw * 0.5f, enemy.y - bh * 0.35f)
-                            lineTo(enemy.x + bw * 0.25f, enemy.y - bh * 0.5f)
-                            lineTo(enemy.x - bw * 0.25f, enemy.y - bh * 0.5f)
-                            lineTo(enemy.x - bw * 0.5f, enemy.y - bh * 0.35f)
-                            lineTo(enemy.x - bw * 0.45f, enemy.y + bh * 0.15f)
-                            close()
-                        }
-                        drawPath(bossPath, color = Color(0xFF4C0519))
-                        // Neon armor trim
-                        drawPath(bossPath, color = NeonCrimson, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 3f))
-                        // Glowing Reactor Core
-                        drawCircle(color = NeonAmber, radius = 22f, center = Offset(enemy.x, enemy.y))
-                        drawCircle(color = Color.White, radius = 10f, center = Offset(enemy.x, enemy.y))
-                    }
-                }
-            }
-
-            // 6. Render Particles
-            for (particle in engine.particles) {
-                val alpha = (particle.life / particle.maxLife).coerceIn(0f, 1f)
-                drawCircle(
-                    color = particle.color.copy(alpha = alpha),
-                    radius = particle.radius,
-                    center = Offset(particle.x, particle.y)
-                )
-            }
-
-            // 7. Render Player Jet
-            val p = engine.player
-            val isBlinking = p.invulnerableTicks > 0 && (p.invulnerableTicks / 4) % 2 == 0
-            if (!isBlinking) {
-                val pw = p.width
-                val ph = p.height
-
-                // Jet Thruster Flame
-                val flamePath = Path().apply {
-                    moveTo(p.x - pw * 0.15f, p.y + ph * 0.4f)
-                    lineTo(p.x, p.y + ph * 0.75f + (frameTick % 5))
-                    lineTo(p.x + pw * 0.15f, p.y + ph * 0.4f)
-                    close()
-                }
-                drawPath(flamePath, color = Color(0xFF38BDF8))
-
-                // Jet Wings & Fuselage
-                val jetPath = Path().apply {
-                    moveTo(p.x, p.y - ph * 0.5f)
-                    lineTo(p.x + pw * 0.15f, p.y - ph * 0.15f)
-                    lineTo(p.x + pw * 0.5f, p.y + ph * 0.25f)
-                    lineTo(p.x + pw * 0.2f, p.y + ph * 0.35f)
-                    lineTo(p.x, p.y + ph * 0.2f)
-                    lineTo(p.x - pw * 0.2f, p.y + ph * 0.35f)
-                    lineTo(p.x - pw * 0.5f, p.y + ph * 0.25f)
-                    lineTo(p.x - pw * 0.15f, p.y - ph * 0.15f)
-                    close()
-                }
-                drawPath(jetPath, color = CyberCyan)
-
-                // Cockpit Core
-                val cockpitPath = Path().apply {
-                    moveTo(p.x, p.y - ph * 0.3f)
-                    lineTo(p.x + pw * 0.08f, p.y - ph * 0.05f)
-                    lineTo(p.x, p.y + ph * 0.05f)
-                    lineTo(p.x - pw * 0.08f, p.y - ph * 0.05f)
-                    close()
-                }
-                drawPath(cockpitPath, color = NeonGold)
-
-                // Shield Energy Bubble
-                if (p.hasShield) {
-                    drawCircle(
-                        color = Color(0xFF00F0FF).copy(alpha = 0.3f),
-                        radius = pw * 0.8f,
-                        center = Offset(p.x, p.y)
-                    )
-                    drawCircle(
-                        color = Color(0xFF00F0FF),
-                        radius = pw * 0.8f,
-                        center = Offset(p.x, p.y),
-                        style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2.5f)
-                    )
-                }
-            }
-        }
+        )
 
         // ==================== HUD OVERLAYS ====================
 
-        // Top Status Bar: Score, Coins, Lives, Pause
+        // Top Status Bar: Score, Diamonds, Lives, Pause
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -355,26 +171,21 @@ fun GameScreen(
                     )
                 }
 
-                // Coins Collected
+                // Diamonds Collected
                 Surface(
-                    color = SpaceCardBg.copy(alpha = 0.85f),
+                    color = SpaceCardBg.copy(alpha = 0.9f),
                     shape = RoundedCornerShape(16.dp),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, NeonGold.copy(alpha = 0.5f))
+                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF38BDF8).copy(alpha = 0.6f))
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.MonetizationOn,
-                            contentDescription = null,
-                            tint = NeonGold,
-                            modifier = Modifier.size(16.dp)
-                        )
+                        Text(text = "💎", fontSize = 12.sp)
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = "+${engine.coinsCollected}",
-                            color = NeonGold,
+                            color = Color(0xFF0284C7),
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -628,8 +439,8 @@ fun GameScreen(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Column(modifier = Modifier.padding(16.dp)) {
-                                ResultStatRow("FINAL SCORE", "%,d".format(engine.score), CyberCyan)
-                                ResultStatRow("COINS HARVESTED", "+${engine.coinsCollected}", NeonGold)
+                                ResultStatRow("FINAL SCORE", "%,d".format(engine.score), DiamondCyan)
+                                ResultStatRow("DIAMONDS COLLECTED", "+${engine.coinsCollected}", DiamondCyan)
                                 ResultStatRow("ENEMIES DESTROYED", "${engine.enemiesKilled}", SpaceTextPrimary)
                                 ResultStatRow("BOSSES DEFEATED", "${engine.bossesKilled}", NeonCrimson)
                             }
@@ -655,6 +466,231 @@ fun GameScreen(
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+/**
+ * Highly optimized Canvas renderer. Reuses Path buffers to avoid garbage collection pauses,
+ * uses direct rotation transforms for diamond rendering, and avoids Color.copy allocations.
+ */
+@Composable
+private fun GameCanvasRenderer(
+    engine: GameEngine,
+    frameTick: Long,
+    widthPx: Float,
+    heightPx: Float,
+    modifier: Modifier = Modifier
+) {
+    val reusablePath1 = remember { Path() }
+    val reusablePath2 = remember { Path() }
+
+    val precomputedStars = remember {
+        val stars = mutableListOf<PrecomputedStar>()
+        for (i in 0 until 35) {
+            val seed = i * 137L
+            val xFrac = (seed * 97L % 1000) / 1000f
+            val yOffsetFrac = (seed * 73L % 1000) / 1000f
+            val speedFactor = (1 + (i % 3)) * 0.0000000625f
+            val radius = if (i % 3 == 0) 2.2f else 1.2f
+            val alpha = if (i % 2 == 0) 0.8f else 0.4f
+            stars.add(PrecomputedStar(xFrac, yOffsetFrac, speedFactor, radius, alpha))
+        }
+        stars
+    }
+
+    Canvas(modifier = modifier) {
+        val tick = frameTick // Triggers redraw of this canvas only
+
+        // 1. Scrolling Starfield
+        for (star in precomputedStars) {
+            val starX = star.xFrac * widthPx
+            val starY = ((star.yOffsetFrac * heightPx) + (tick * star.speedFactor * heightPx)) % heightPx
+            drawCircle(
+                color = Color.White,
+                alpha = star.alpha,
+                radius = star.radius,
+                center = Offset(starX, starY)
+            )
+        }
+
+        // 2. Render PowerUps
+        for (pu in engine.powerUps) {
+            val puColor = when (pu.type) {
+                PowerUpType.TRIPLE_SHOT -> CyberCyan
+                PowerUpType.SHIELD -> Color(0xFF38BDF8)
+                PowerUpType.SPEED_BOOST -> NeonGold
+                PowerUpType.EMP_BOMB -> NeonCrimson
+            }
+            drawCircle(color = puColor, alpha = 0.3f, radius = pu.radius * 1.4f, center = Offset(pu.x, pu.y))
+            drawCircle(color = puColor, radius = pu.radius, center = Offset(pu.x, pu.y))
+            drawCircle(color = Color.White, radius = pu.radius * 0.4f, center = Offset(pu.x, pu.y))
+        }
+
+        // 3. Render Collectible Diamonds (Direct rotation transform, ZERO Path allocations)
+        for (coin in engine.coins) {
+            val dSize = coin.radius * 0.9f
+            rotate(45f, pivot = Offset(coin.x, coin.y)) {
+                drawRect(
+                    color = Color(0xFF0284C7),
+                    topLeft = Offset(coin.x - dSize, coin.y - dSize),
+                    size = Size(dSize * 2f, dSize * 2f)
+                )
+                val innerSize = dSize * 0.55f
+                drawRect(
+                    color = Color(0xFF38BDF8),
+                    topLeft = Offset(coin.x - innerSize, coin.y - innerSize),
+                    size = Size(innerSize * 2f, innerSize * 2f)
+                )
+            }
+        }
+
+        // 4. Render Lasers
+        for (laser in engine.lasers) {
+            drawCircle(
+                color = laser.color,
+                radius = laser.radius,
+                center = Offset(laser.x, laser.y)
+            )
+            val trailLen = if (laser.isEnemy) 12f else 18f
+            drawLine(
+                color = laser.color,
+                alpha = 0.6f,
+                start = Offset(laser.x, laser.y),
+                end = Offset(laser.x - laser.vx * 0.5f, laser.y - laser.vy * 0.8f),
+                strokeWidth = laser.radius * 1.5f
+            )
+        }
+
+        // 5. Render Enemies & Boss (using reusablePath to eliminate GC)
+        for (enemy in engine.enemies) {
+            when (enemy.type) {
+                EnemyType.SCOUT -> {
+                    reusablePath1.reset()
+                    reusablePath1.moveTo(enemy.x, enemy.y + enemy.height / 2f)
+                    reusablePath1.lineTo(enemy.x - enemy.width / 2f, enemy.y)
+                    reusablePath1.lineTo(enemy.x, enemy.y - enemy.height / 2f)
+                    reusablePath1.lineTo(enemy.x + enemy.width / 2f, enemy.y)
+                    reusablePath1.close()
+                    drawPath(reusablePath1, color = Color(0xFFF97316))
+                    drawCircle(color = Color(0xFFFFE4E6), radius = 4f, center = Offset(enemy.x, enemy.y))
+                }
+                EnemyType.FIGHTER -> {
+                    reusablePath1.reset()
+                    reusablePath1.moveTo(enemy.x, enemy.y + enemy.height / 2f)
+                    reusablePath1.lineTo(enemy.x + enemy.width / 2f, enemy.y - enemy.height / 2f)
+                    reusablePath1.lineTo(enemy.x, enemy.y - enemy.height / 4f)
+                    reusablePath1.lineTo(enemy.x - enemy.width / 2f, enemy.y - enemy.height / 2f)
+                    reusablePath1.close()
+                    drawPath(reusablePath1, color = NeonCrimson)
+                    drawCircle(color = NeonAmber, radius = 5f, center = Offset(enemy.x, enemy.y - 4f))
+                }
+                EnemyType.BOMBER -> {
+                    drawRoundRect(
+                        color = Color(0xFF7C3AED),
+                        topLeft = Offset(enemy.x - enemy.width / 2f, enemy.y - enemy.height / 2f),
+                        size = Size(enemy.width, enemy.height),
+                        cornerRadius = CornerRadius(10f, 10f)
+                    )
+                    drawCircle(color = Color(0xFFC084FC), radius = 10f, center = Offset(enemy.x, enemy.y))
+                }
+                EnemyType.ASTEROID -> {
+                    drawCircle(
+                        color = Color(0xFF64748B),
+                        radius = enemy.width / 2f,
+                        center = Offset(enemy.x, enemy.y)
+                    )
+                    drawCircle(
+                        color = Color(0xFF94A3B8),
+                        radius = enemy.width * 0.3f,
+                        center = Offset(enemy.x - 6f, enemy.y - 6f)
+                    )
+                }
+                EnemyType.BOSS -> {
+                    val bw = enemy.width
+                    val bh = enemy.height
+                    reusablePath1.reset()
+                    reusablePath1.moveTo(enemy.x, enemy.y + bh * 0.45f)
+                    reusablePath1.lineTo(enemy.x + bw * 0.45f, enemy.y + bh * 0.15f)
+                    reusablePath1.lineTo(enemy.x + bw * 0.5f, enemy.y - bh * 0.35f)
+                    reusablePath1.lineTo(enemy.x + bw * 0.25f, enemy.y - bh * 0.5f)
+                    reusablePath1.lineTo(enemy.x, enemy.y - bh * 0.3f)
+                    reusablePath1.lineTo(enemy.x - bw * 0.25f, enemy.y - bh * 0.5f)
+                    reusablePath1.lineTo(enemy.x - bw * 0.5f, enemy.y - bh * 0.35f)
+                    reusablePath1.lineTo(enemy.x - bw * 0.45f, enemy.y + bh * 0.15f)
+                    reusablePath1.close()
+
+                    drawPath(reusablePath1, color = Color(0xFF4C0519))
+                    drawPath(reusablePath1, color = NeonCrimson, style = Stroke(width = 3.5f))
+                    drawCircle(color = NeonAmber, radius = 22f, center = Offset(enemy.x, enemy.y))
+                    drawCircle(color = Color.White, radius = 10f, center = Offset(enemy.x, enemy.y))
+                }
+            }
+        }
+
+        // 6. Render Particles
+        for (particle in engine.particles) {
+            val alpha = (particle.life / particle.maxLife).coerceIn(0f, 1f)
+            drawCircle(
+                color = particle.color,
+                alpha = alpha,
+                radius = particle.radius,
+                center = Offset(particle.x, particle.y)
+            )
+        }
+
+        // 7. Render Player Jet (using reusable paths)
+        val p = engine.player
+        val isBlinking = p.invulnerableTicks > 0 && (p.invulnerableTicks / 4) % 2 == 0
+        if (!isBlinking) {
+            val pw = p.width
+            val ph = p.height
+
+            // Jet Thruster Flame
+            reusablePath1.reset()
+            reusablePath1.moveTo(p.x - pw * 0.15f, p.y + ph * 0.4f)
+            reusablePath1.lineTo(p.x, p.y + ph * 0.75f + (tick % 5))
+            reusablePath1.lineTo(p.x + pw * 0.15f, p.y + ph * 0.4f)
+            reusablePath1.close()
+            drawPath(reusablePath1, color = Color(0xFF38BDF8))
+
+            // Jet Wings & Fuselage
+            reusablePath1.reset()
+            reusablePath1.moveTo(p.x, p.y - ph * 0.5f)
+            reusablePath1.lineTo(p.x + pw * 0.15f, p.y - ph * 0.15f)
+            reusablePath1.lineTo(p.x + pw * 0.5f, p.y + ph * 0.25f)
+            reusablePath1.lineTo(p.x + pw * 0.2f, p.y + ph * 0.35f)
+            reusablePath1.lineTo(p.x, p.y + ph * 0.2f)
+            reusablePath1.lineTo(p.x - pw * 0.2f, p.y + ph * 0.35f)
+            reusablePath1.lineTo(p.x - pw * 0.5f, p.y + ph * 0.25f)
+            reusablePath1.lineTo(p.x - pw * 0.15f, p.y - ph * 0.15f)
+            reusablePath1.close()
+            drawPath(reusablePath1, color = CyberCyan)
+
+            // Cockpit Core
+            reusablePath2.reset()
+            reusablePath2.moveTo(p.x, p.y - ph * 0.3f)
+            reusablePath2.lineTo(p.x + pw * 0.08f, p.y - ph * 0.05f)
+            reusablePath2.lineTo(p.x, p.y + ph * 0.05f)
+            reusablePath2.lineTo(p.x - pw * 0.08f, p.y - ph * 0.05f)
+            reusablePath2.close()
+            drawPath(reusablePath2, color = NeonGold)
+
+            // Shield Energy Bubble
+            if (p.hasShield) {
+                drawCircle(
+                    color = Color(0xFF00F0FF),
+                    alpha = 0.3f,
+                    radius = pw * 0.8f,
+                    center = Offset(p.x, p.y)
+                )
+                drawCircle(
+                    color = Color(0xFF00F0FF),
+                    radius = pw * 0.8f,
+                    center = Offset(p.x, p.y),
+                    style = Stroke(width = 2.5f)
+                )
             }
         }
     }

@@ -37,24 +37,28 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.model.PlayPointsCoupon
 import com.example.data.model.PlayPointsCoupons
-import com.example.ui.components.CyberButton
+import com.example.ui.components.TobiDiamond3D
 import com.example.ui.components.TobiGtHeader
-import com.example.ui.theme.CyberCyan
+import com.example.ui.theme.DiamondBg
+import com.example.ui.theme.DiamondBlue
+import com.example.ui.theme.DiamondBorder
+import com.example.ui.theme.DiamondCyan
+import com.example.ui.theme.DiamondLight
 import com.example.ui.theme.LaserGreen
-import com.example.ui.theme.NeonAmber
 import com.example.ui.theme.NeonGold
 import com.example.ui.theme.SpaceCardBg
 import com.example.ui.theme.SpaceCardBorder
+import com.example.ui.theme.SpaceCardElevated
 import com.example.ui.theme.SpaceDarkBg
 import com.example.ui.theme.SpaceTextMuted
 import com.example.ui.theme.SpaceTextPrimary
@@ -75,7 +79,7 @@ fun PlayPointsScreen(
             .testTag("play_points_screen")
     ) {
         TobiGtHeader(
-            title = "PLAY POINTS / REWARDS",
+            title = "PLAY POINTS REWARDS",
             coins = coins,
             onBack = onBack
         )
@@ -85,51 +89,69 @@ fun PlayPointsScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            // Hero Header: "Use Google Play Points"
+            // Hero Header: "Google Play Points Rewards"
             item {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .border(1.5.dp, Brush.horizontalGradient(listOf(Color(0xFF10B981), Color(0xFF00F0FF))), RoundedCornerShape(16.dp)),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF064E3B).copy(alpha = 0.45f))
+                        .clip(RoundedCornerShape(18.dp))
+                        .shadow(6.dp, RoundedCornerShape(18.dp), spotColor = Color(0x3310B981))
+                        .border(1.2.dp, Color(0xFF10B981).copy(alpha = 0.5f), RoundedCornerShape(18.dp)),
+                    colors = CardDefaults.cardColors(containerColor = SpaceCardBg)
                 ) {
-                    Column(modifier = Modifier.padding(18.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier
-                                    .size(46.dp)
-                                    .background(Color(0xFF059669), CircleShape),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Loyalty,
-                                    contentDescription = null,
-                                    tint = Color.White,
-                                    modifier = Modifier.size(28.dp)
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                Brush.verticalGradient(
+                                    listOf(Color(0xFF062E22), SpaceCardBg)
                                 )
+                            )
+                            .padding(18.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(46.dp)
+                                        .background(Color(0xFF10B981), CircleShape),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Loyalty,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(26.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(14.dp))
+                                Column {
+                                    Text(
+                                        text = "Google Play Points Rewards",
+                                        color = SpaceTextPrimary,
+                                        fontSize = 17.sp,
+                                        fontWeight = FontWeight.Black
+                                    )
+                                    Text(
+                                        text = "Official Play Points Promotion System",
+                                        color = Color(0xFF34D399),
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
                             }
-                            Spacer(modifier = Modifier.width(14.dp))
-                            Column {
-                                Text(
-                                    text = "Use Google Play Points",
-                                    color = SpaceTextPrimary,
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.Black
-                                )
-                                Text(
-                                    text = "Official Play Points Promotion System",
-                                    color = Color(0xFF6EE7B7),
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                            }
+
+                            TobiDiamond3D(size = 36.dp, animated = false)
                         }
 
                         Spacer(modifier = Modifier.height(14.dp))
 
                         Text(
-                            text = "Exchange your Google Play Points for official Tobi GT coupons on the Google Play Store. When you make an in-game digital Coin purchase, Google Play automatically applies your coupon discount at checkout.",
+                            text = "Exchange your Google Play Points for official TOBI GT discount coupons on Google Play. When you purchase in-game digital Diamonds, Google Play automatically applies your coupon discount at checkout.",
                             color = SpaceTextSecondary,
                             fontSize = 12.sp,
                             lineHeight = 17.sp
@@ -137,11 +159,11 @@ fun PlayPointsScreen(
 
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        // Status Banner required by specification
+                        // Status & Eligibility Notice Banner
                         Surface(
-                            color = Color(0xFF0F172A),
-                            shape = RoundedCornerShape(8.dp),
-                            border = BorderStroke(1.dp, Color(0xFF1E293B)),
+                            color = Color(0xFF0F1E24),
+                            shape = RoundedCornerShape(10.dp),
+                            border = BorderStroke(1.dp, Color(0xFF1F3A44)),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Row(
@@ -151,13 +173,13 @@ fun PlayPointsScreen(
                                 Icon(
                                     imageVector = Icons.Default.Info,
                                     contentDescription = null,
-                                    tint = NeonAmber,
+                                    tint = DiamondCyan,
                                     modifier = Modifier.size(18.dp)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "Google Play Points rewards will be available after the game is enrolled and promotions are configured in Google Play Console.",
-                                    color = SpaceTextSecondary,
+                                    text = "Rewards are managed by Google Play Console. Availability and eligibility depend on your Google Play account country, level, and active promotion status.",
+                                    color = Color(0xFF94A3B8),
                                     fontSize = 11.sp,
                                     lineHeight = 15.sp
                                 )
@@ -167,12 +189,13 @@ fun PlayPointsScreen(
                 }
             }
 
-            // Developer Guide Button
+            // Developer Play Console Setup Guide Link
             item {
                 Surface(
-                    color = SpaceCardBg,
+                    color = SpaceCardElevated,
                     shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, CyberCyan.copy(alpha = 0.5f)),
+                    border = BorderStroke(1.dp, DiamondBorder),
+                    shadowElevation = 2.dp,
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { onNavigatePlayConsoleDocs() }
@@ -185,7 +208,7 @@ fun PlayPointsScreen(
                         Icon(
                             imageVector = Icons.Default.MenuBook,
                             contentDescription = null,
-                            tint = CyberCyan,
+                            tint = DiamondCyan,
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(10.dp))
@@ -197,7 +220,7 @@ fun PlayPointsScreen(
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = "Monetize with Play → Products → Play Points Guide",
+                                text = "Google Play Console → Products → Play Points Guide",
                                 color = SpaceTextMuted,
                                 fontSize = 10.sp
                             )
@@ -205,7 +228,7 @@ fun PlayPointsScreen(
                         Icon(
                             imageVector = Icons.Default.Launch,
                             contentDescription = null,
-                            tint = CyberCyan,
+                            tint = DiamondCyan,
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -214,13 +237,24 @@ fun PlayPointsScreen(
 
             // Section Header
             item {
-                Text(
-                    text = "AVAILABLE TOBI GT COUPON REWARDS",
-                    color = SpaceTextMuted,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "12 REWARD TIERS (1 TO 40 PLAY POINTS)",
+                        color = DiamondCyan,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 1.sp
+                    )
+                    Text(
+                        text = "$1 = 1 Point Tier",
+                        color = SpaceTextMuted,
+                        fontSize = 10.sp
+                    )
+                }
             }
 
             // All 12 Play Points Coupon Cards
@@ -228,7 +262,6 @@ fun PlayPointsScreen(
                 PlayPointsCouponCard(
                     coupon = coupon,
                     onRedeem = {
-                        // Official Google Play flow: open Google Play Points tab / Store
                         try {
                             val intent = Intent(Intent.ACTION_VIEW).apply {
                                 data = Uri.parse("https://play.google.com/store/points")
@@ -243,25 +276,25 @@ fun PlayPointsScreen(
                 )
             }
 
-            // System Separation Notice
+            // Architecture & Compliance Note
             item {
                 Surface(
-                    color = SpaceCardBg.copy(alpha = 0.6f),
-                    shape = RoundedCornerShape(10.dp),
+                    color = SpaceCardBg,
+                    shape = RoundedCornerShape(12.dp),
                     border = BorderStroke(1.dp, SpaceCardBorder),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
+                    Column(modifier = Modifier.padding(14.dp)) {
                         Text(
-                            text = "SECURITY & ARCHITECTURE NOTE:",
-                            color = NeonAmber,
+                            text = "SECURITY & INTEGRITY ARCHITECTURE:",
+                            color = DiamondCyan,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 0.5.sp
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Tobi GT Coins ≠ Google Play Points.\nTobi GT Coins are the game's virtual currency. Google Play Points are Google's external reward currency managed strictly through official Google Play APIs. The game does not access or deduct your Google account points directly.",
+                            text = "TOBI GT Diamonds ≠ Google Play Points.\nTOBI GT Diamonds are the in-game currency. Google Play Points are Google's external reward currency managed strictly through official Google Play APIs. The app never accesses, simulates, or deducts your Google account points directly.",
                             color = SpaceTextMuted,
                             fontSize = 10.sp,
                             lineHeight = 14.sp
@@ -282,6 +315,7 @@ private fun PlayPointsCouponCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
+            .shadow(2.dp, RoundedCornerShape(14.dp), spotColor = Color(0x33000000))
             .border(1.dp, SpaceCardBorder, RoundedCornerShape(14.dp))
             .testTag("coupon_${coupon.id}"),
         colors = CardDefaults.cardColors(containerColor = SpaceCardBg)
@@ -294,13 +328,13 @@ private fun PlayPointsCouponCard(
             ) {
                 // Value Pill
                 Surface(
-                    color = Color(0xFF065F46),
+                    color = DiamondBg,
                     shape = RoundedCornerShape(8.dp),
-                    border = BorderStroke(1.dp, Color(0xFF10B981))
+                    border = BorderStroke(1.dp, DiamondBorder)
                 ) {
                     Text(
                         text = "$${coupon.discountDollars} OFF",
-                        color = Color(0xFF6EE7B7),
+                        color = DiamondCyan,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Black,
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
@@ -309,9 +343,9 @@ private fun PlayPointsCouponCard(
 
                 // Points Cost Pill
                 Surface(
-                    color = Color(0xFF1E293B),
+                    color = SpaceCardElevated,
                     shape = RoundedCornerShape(8.dp),
-                    border = BorderStroke(1.dp, NeonGold.copy(alpha = 0.5f))
+                    border = BorderStroke(1.dp, SpaceCardBorder)
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -326,7 +360,7 @@ private fun PlayPointsCouponCard(
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = "${coupon.pointsCost} Play Point${if (coupon.pointsCost > 1) "s" else ""}",
-                            color = NeonGold,
+                            color = SpaceTextPrimary,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -354,7 +388,7 @@ private fun PlayPointsCouponCard(
                 Box(
                     modifier = Modifier
                         .size(6.dp)
-                        .background(Color(0xFF34D399), CircleShape)
+                        .background(LaserGreen, CircleShape)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
@@ -366,33 +400,33 @@ private fun PlayPointsCouponCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Action: View Offer on Google Play
+            // Action: Use Play Points / Get Reward on Google Play
             Surface(
-                color = Color(0xFF1E293B),
+                color = Color(0xFF0F2338),
                 shape = RoundedCornerShape(10.dp),
-                border = BorderStroke(1.dp, CyberCyan.copy(alpha = 0.5f)),
+                border = BorderStroke(1.dp, DiamondBorder),
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { onRedeem() }
                     .testTag("redeem_btn_${coupon.id}")
             ) {
                 Row(
-                    modifier = Modifier.padding(vertical = 10.dp),
+                    modifier = Modifier.padding(vertical = 11.dp),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
                         imageVector = Icons.Default.Launch,
                         contentDescription = null,
-                        tint = CyberCyan,
+                        tint = DiamondCyan,
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "View on Google Play (${coupon.pointsCost} Pts)",
-                        color = CyberCyan,
+                        text = "Use Play Points (${coupon.pointsCost} Pts) on Google Play",
+                        color = DiamondCyan,
                         fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.ExtraBold
                     )
                 }
             }

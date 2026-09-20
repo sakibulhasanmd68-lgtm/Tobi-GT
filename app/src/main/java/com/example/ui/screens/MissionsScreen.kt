@@ -21,9 +21,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AssignmentTurnedIn
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.MonetizationOn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -34,19 +32,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.model.MissionEntity
+import com.example.ui.components.TobiDiamond3D
 import com.example.ui.components.TobiGtHeader
-import com.example.ui.theme.CyberCyan
+import com.example.ui.theme.DiamondBg
+import com.example.ui.theme.DiamondBorder
+import com.example.ui.theme.DiamondCyan
 import com.example.ui.theme.LaserGreen
 import com.example.ui.theme.NeonAmber
-import com.example.ui.theme.NeonGold
 import com.example.ui.theme.SpaceCardBg
 import com.example.ui.theme.SpaceCardBorder
+import com.example.ui.theme.SpaceCardElevated
 import com.example.ui.theme.SpaceDarkBg
 import com.example.ui.theme.SpaceTextMuted
 import com.example.ui.theme.SpaceTextPrimary
@@ -77,13 +80,24 @@ fun MissionsScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {
-                Text(
-                    text = "ACTIVE SQUADRON BOUNTIES",
-                    color = SpaceTextMuted,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "ACTIVE SQUADRON BOUNTIES",
+                        color = DiamondCyan,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 1.sp
+                    )
+                    Text(
+                        text = "${missions.count { it.isClaimed }}/${missions.size} CLAIMED",
+                        color = SpaceTextMuted,
+                        fontSize = 10.sp
+                    )
+                }
             }
 
             items(missions) { mission ->
@@ -109,9 +123,10 @@ private fun MissionCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(14.dp))
+            .shadow(2.dp, RoundedCornerShape(14.dp), spotColor = Color(0x22000000))
             .border(
                 1.dp,
-                if (isCompleted && !isClaimed) CyberCyan else SpaceCardBorder,
+                if (isCompleted && !isClaimed) DiamondCyan else SpaceCardBorder,
                 RoundedCornerShape(14.dp)
             )
             .testTag("mission_card_${mission.id}"),
@@ -132,26 +147,21 @@ private fun MissionCard(
 
                 // Reward Pill
                 Surface(
-                    color = Color(0xFF1E293B),
+                    color = DiamondBg,
                     shape = RoundedCornerShape(8.dp),
-                    border = BorderStroke(1.dp, NeonGold.copy(alpha = 0.5f))
+                    border = BorderStroke(1.dp, DiamondBorder)
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.MonetizationOn,
-                            contentDescription = null,
-                            tint = NeonGold,
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
+                        TobiDiamond3D(size = 14.dp, animated = false)
+                        Spacer(modifier = Modifier.width(5.dp))
                         Text(
-                            text = "+${mission.rewardCoins} Coins",
-                            color = NeonGold,
+                            text = "+${mission.rewardCoins} Diamonds",
+                            color = DiamondCyan,
                             fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.ExtraBold
                         )
                     }
                 }
@@ -181,7 +191,7 @@ private fun MissionCard(
                 )
                 Text(
                     text = "${(progressFraction * 100).toInt()}%",
-                    color = if (isCompleted) LaserGreen else CyberCyan,
+                    color = if (isCompleted) LaserGreen else DiamondCyan,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -195,8 +205,8 @@ private fun MissionCard(
                     .fillMaxWidth()
                     .height(6.dp)
                     .clip(RoundedCornerShape(3.dp)),
-                color = if (isCompleted) LaserGreen else CyberCyan,
-                trackColor = Color(0xFF1E293B)
+                color = if (isCompleted) LaserGreen else DiamondCyan,
+                trackColor = SpaceCardBorder
             )
 
             Spacer(modifier = Modifier.height(14.dp))
@@ -205,8 +215,9 @@ private fun MissionCard(
             when {
                 isClaimed -> {
                     Surface(
-                        color = Color(0xFF1E293B),
+                        color = Color(0xFF062E22),
                         shape = RoundedCornerShape(8.dp),
+                        border = BorderStroke(1.dp, LaserGreen.copy(alpha = 0.4f)),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
@@ -232,7 +243,7 @@ private fun MissionCard(
                 }
                 isCompleted -> {
                     Surface(
-                        color = CyberCyan,
+                        color = DiamondCyan,
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier
                             .fillMaxWidth()
@@ -240,18 +251,18 @@ private fun MissionCard(
                             .testTag("claim_btn_${mission.id}")
                     ) {
                         Text(
-                            text = "CLAIM REWARD (+${mission.rewardCoins} COINS)",
-                            color = Color(0xFF060913),
+                            text = "CLAIM REWARD (+${mission.rewardCoins} DIAMONDS)",
+                            color = Color(0xFF090D16),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Black,
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                            textAlign = TextAlign.Center,
                             modifier = Modifier.padding(vertical = 10.dp)
                         )
                     }
                 }
                 else -> {
                     Surface(
-                        color = Color(0xFF131D2D),
+                        color = SpaceCardElevated,
                         shape = RoundedCornerShape(8.dp),
                         border = BorderStroke(1.dp, SpaceCardBorder),
                         modifier = Modifier.fillMaxWidth()
@@ -261,7 +272,7 @@ private fun MissionCard(
                             color = SpaceTextMuted,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                            textAlign = TextAlign.Center,
                             modifier = Modifier.padding(vertical = 8.dp)
                         )
                     }

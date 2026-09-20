@@ -20,13 +20,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AssignmentTurnedIn
+import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.Dangerous
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Flight
-import androidx.compose.material.icons.filled.MonetizationOn
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.ReceiptLong
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -37,21 +35,28 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.model.TransactionEntity
 import com.example.data.model.UserEntity
+import com.example.ui.components.TobiDiamond3D
 import com.example.ui.components.TobiGtHeader
-import com.example.ui.theme.CyberCyan
+import com.example.ui.theme.DiamondBg
+import com.example.ui.theme.DiamondBlue
+import com.example.ui.theme.DiamondBorder
+import com.example.ui.theme.DiamondCyan
 import com.example.ui.theme.LaserGreen
 import com.example.ui.theme.NeonAmber
 import com.example.ui.theme.NeonCrimson
 import com.example.ui.theme.NeonGold
 import com.example.ui.theme.SpaceCardBg
 import com.example.ui.theme.SpaceCardBorder
+import com.example.ui.theme.SpaceCardElevated
 import com.example.ui.theme.SpaceDarkBg
 import com.example.ui.theme.SpaceTextMuted
 import com.example.ui.theme.SpaceTextPrimary
@@ -75,7 +80,7 @@ fun ProfileScreen(
             .testTag("profile_screen")
     ) {
         TobiGtHeader(
-            title = "PILOT LOGBOOK",
+            title = "TRANSACTIONS & PROFILE",
             coins = user?.coins ?: 0L,
             onBack = onBack
         )
@@ -91,40 +96,49 @@ fun ProfileScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(16.dp))
-                        .border(1.dp, CyberCyan.copy(alpha = 0.5f), RoundedCornerShape(16.dp)),
+                        .shadow(4.dp, RoundedCornerShape(16.dp), spotColor = Color(0x33000000))
+                        .border(1.dp, DiamondBorder, RoundedCornerShape(16.dp)),
                     colors = CardDefaults.cardColors(containerColor = SpaceCardBg)
                 ) {
                     Column(modifier = Modifier.padding(18.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier
-                                    .size(50.dp)
-                                    .background(Color(0xFF1E293B), CircleShape)
-                                    .border(1.5.dp, CyberCyan, CircleShape),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Person,
-                                    contentDescription = null,
-                                    tint = CyberCyan,
-                                    modifier = Modifier.size(28.dp)
-                                )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(50.dp)
+                                        .background(DiamondBg, CircleShape)
+                                        .border(1.5.dp, DiamondCyan, CircleShape),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Person,
+                                        contentDescription = null,
+                                        tint = DiamondCyan,
+                                        modifier = Modifier.size(28.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(14.dp))
+                                Column {
+                                    Text(
+                                        text = user?.displayName ?: "Anonymous Pilot",
+                                        color = SpaceTextPrimary,
+                                        fontSize = 17.sp,
+                                        fontWeight = FontWeight.Black
+                                    )
+                                    Text(
+                                        text = "USER ID: ${user?.userId ?: "Generating..."}",
+                                        color = SpaceTextMuted,
+                                        fontSize = 11.sp,
+                                        letterSpacing = 0.5.sp
+                                    )
+                                }
                             }
-                            Spacer(modifier = Modifier.width(14.dp))
-                            Column {
-                                Text(
-                                    text = user?.displayName ?: "Anonymous Pilot",
-                                    color = SpaceTextPrimary,
-                                    fontSize = 17.sp,
-                                    fontWeight = FontWeight.Black
-                                )
-                                Text(
-                                    text = "USER ID: ${user?.userId ?: "Generating..."}",
-                                    color = SpaceTextMuted,
-                                    fontSize = 11.sp,
-                                    letterSpacing = 0.5.sp
-                                )
-                            }
+
+                            TobiDiamond3D(size = 36.dp, animated = false)
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))
@@ -143,7 +157,7 @@ fun ProfileScreen(
                                 label = "SORTIES FLOWN",
                                 value = "${user?.gamesPlayed ?: 0}",
                                 icon = Icons.Default.Flight,
-                                iconTint = CyberCyan,
+                                iconTint = DiamondCyan,
                                 modifier = Modifier.weight(1f)
                             )
                         }
@@ -178,13 +192,22 @@ fun ProfileScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "PURCHASE TRANSACTION LEDGER",
-                        color = SpaceTextMuted,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ReceiptLong,
+                            contentDescription = null,
+                            tint = DiamondCyan,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "PURCHASE TRANSACTION HISTORY",
+                            color = DiamondCyan,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 1.sp
+                        )
+                    }
                     Text(
                         text = "${transactions.size} records",
                         color = SpaceTextMuted,
@@ -196,26 +219,34 @@ fun ProfileScreen(
             if (transactions.isEmpty()) {
                 item {
                     Surface(
-                        color = SpaceCardBg.copy(alpha = 0.5f),
-                        shape = RoundedCornerShape(12.dp),
+                        color = SpaceCardBg,
+                        shape = RoundedCornerShape(14.dp),
                         border = BorderStroke(1.dp, SpaceCardBorder),
+                        shadowElevation = 2.dp,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(
-                            modifier = Modifier.padding(24.dp),
+                            modifier = Modifier.padding(28.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Icon(
-                                imageVector = Icons.Default.ReceiptLong,
+                                imageVector = Icons.AutoMirrored.Filled.ReceiptLong,
                                 contentDescription = null,
                                 tint = SpaceTextMuted,
-                                modifier = Modifier.size(36.dp)
+                                modifier = Modifier.size(38.dp)
                             )
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(10.dp))
                             Text(
                                 text = "No purchase transactions recorded yet",
                                 color = SpaceTextSecondary,
-                                fontSize = 12.sp
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Purchases made in the Diamond Shop will be verified and stored here.",
+                                color = SpaceTextMuted,
+                                fontSize = 11.sp
                             )
                         }
                     }
@@ -233,12 +264,12 @@ fun ProfileScreen(
 private fun StatBox(
     label: String,
     value: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     iconTint: Color,
     modifier: Modifier = Modifier
 ) {
     Surface(
-        color = Color(0xFF131D2D),
+        color = SpaceCardElevated,
         shape = RoundedCornerShape(10.dp),
         border = BorderStroke(1.dp, SpaceCardBorder),
         modifier = modifier
@@ -279,12 +310,13 @@ private fun TransactionRow(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(10.dp))
-            .border(1.dp, SpaceCardBorder, RoundedCornerShape(10.dp))
+            .clip(RoundedCornerShape(12.dp))
+            .shadow(2.dp, RoundedCornerShape(12.dp), spotColor = Color(0x22000000))
+            .border(1.dp, SpaceCardBorder, RoundedCornerShape(12.dp))
             .testTag("transaction_row_${tx.id}"),
         colors = CardDefaults.cardColors(containerColor = SpaceCardBg)
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
+        Column(modifier = Modifier.padding(14.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -298,13 +330,13 @@ private fun TransactionRow(
                 )
                 Text(
                     text = "$${"%.2f".format(tx.price)}",
-                    color = NeonGold,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold
+                    color = DiamondCyan,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.ExtraBold
                 )
             }
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -326,7 +358,7 @@ private fun TransactionRow(
                         color = statusColor,
                         fontSize = 9.sp,
                         fontWeight = FontWeight.ExtraBold,
-                        modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.dp)
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                     )
                 }
             }
@@ -339,7 +371,7 @@ private fun TransactionRow(
             ) {
                 Text(
                     text = "VIA: ${tx.paymentProvider}",
-                    color = CyberCyan.copy(alpha = 0.8f),
+                    color = DiamondCyan,
                     fontSize = 10.sp
                 )
                 Text(

@@ -26,25 +26,32 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Loyalty
-import androidx.compose.material.icons.filled.MonetizationOn
 import androidx.compose.material.icons.filled.Payment
-import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
@@ -55,13 +62,19 @@ import androidx.compose.ui.unit.sp
 import com.example.data.model.CoinPackage
 import com.example.data.model.CoinPackages
 import com.example.ui.components.CyberButton
+import com.example.ui.components.TobiDiamond3D
 import com.example.ui.components.TobiGtHeader
-import com.example.ui.theme.CyberCyan
+import com.example.ui.theme.DiamondBg
+import com.example.ui.theme.DiamondBlue
+import com.example.ui.theme.DiamondBorder
+import com.example.ui.theme.DiamondCyan
+import com.example.ui.theme.DiamondLight
 import com.example.ui.theme.LaserGreen
 import com.example.ui.theme.NeonAmber
 import com.example.ui.theme.NeonGold
 import com.example.ui.theme.SpaceCardBg
 import com.example.ui.theme.SpaceCardBorder
+import com.example.ui.theme.SpaceCardElevated
 import com.example.ui.theme.SpaceDarkBg
 import com.example.ui.theme.SpaceTextMuted
 import com.example.ui.theme.SpaceTextPrimary
@@ -77,202 +90,355 @@ fun CoinStoreScreen(
     onPurchasePackage: (CoinPackage) -> Unit,
     onClearFeedback: () -> Unit,
     onNavigatePlayPoints: () -> Unit,
+    onNavigateTransactions: (() -> Unit)? = null,
     onBack: () -> Unit
 ) {
-    Column(
+    var selectedPackage by remember { mutableStateOf<CoinPackage?>(null) }
+    var activeCategory by remember { mutableStateOf("ALL") }
+
+    val filteredPackages = remember(activeCategory) {
+        when (activeCategory) {
+            "POPULAR" -> CoinPackages.ALL.filter { it.isPopular || it.badge == "PILOT'S PICK" || it.badge == "SQUADRON" }
+            "VAULT" -> CoinPackages.ALL.filter { it.priceDollars >= 50.0 || it.isBestValue }
+            else -> CoinPackages.ALL
+        }
+    }
+
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(SpaceDarkBg)
             .testTag("coin_store_screen")
     ) {
-        TobiGtHeader(
-            title = "COIN STORE",
-            coins = coins,
-            onBack = onBack
-        )
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Header with Live Diamond Balance
+            TobiGtHeader(
+                title = "DIAMOND SHOP",
+                coins = coins,
+                onBack = onBack
+            )
 
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            contentPadding = PaddingValues(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.weight(1f)
-        ) {
-            // Store Header: Payment Provider Toggle & Play Points Banner
-            item(span = { GridItemSpan(2) }) {
-                Column {
-                    // Google Play Points Discount Callout Banner
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .border(1.dp, Color(0xFF10B981).copy(alpha = 0.5f), RoundedCornerShape(12.dp))
-                            .clickable { onNavigatePlayPoints() }
-                            .testTag("store_play_points_callout"),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF064E3B).copy(alpha = 0.35f))
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                contentPadding = PaddingValues(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.weight(1f)
+            ) {
+                // Large Hero Showcase & Filter Chips
+                item(span = { GridItemSpan(2) }) {
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        // Hero Diamond Showcase Banner
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .shadow(8.dp, RoundedCornerShape(20.dp), spotColor = DiamondCyan.copy(alpha = 0.3f))
+                                .border(1.5.dp, DiamondBorder, RoundedCornerShape(20.dp)),
+                            shape = RoundedCornerShape(20.dp),
+                            colors = CardDefaults.cardColors(containerColor = SpaceCardBg)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Loyalty,
-                                contentDescription = null,
-                                tint = Color(0xFF34D399),
-                                modifier = Modifier.size(24.dp)
-                            )
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Column(modifier = Modifier.weight(1f)) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(
+                                        Brush.verticalGradient(
+                                            listOf(DiamondBg, SpaceCardBg)
+                                        )
+                                    )
+                                    .padding(18.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Surface(
+                                            color = Color(0x3300E5FF),
+                                            shape = RoundedCornerShape(6.dp),
+                                            border = BorderStroke(1.dp, Color(0x6600E5FF))
+                                        ) {
+                                            Text(
+                                                text = "OFFICIAL DIAMOND VAULT",
+                                                color = DiamondCyan,
+                                                fontSize = 9.sp,
+                                                fontWeight = FontWeight.Black,
+                                                letterSpacing = 1.sp,
+                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.height(6.dp))
+                                        Text(
+                                            text = "Tobi GT Diamonds",
+                                            color = SpaceTextPrimary,
+                                            fontSize = 20.sp,
+                                            fontWeight = FontWeight.Black
+                                        )
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            text = "1 USD = 100 Diamonds\nCalculated instantly on checkout",
+                                            color = SpaceTextSecondary,
+                                            fontSize = 11.sp,
+                                            lineHeight = 15.sp
+                                        )
+                                    }
+
+                                    // Large 3D Faceted Diamond Visual
+                                    TobiDiamond3D(size = 76.dp, animated = true)
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        // Google Play Points Rewards Callout Banner
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(14.dp))
+                                .border(1.2.dp, Color(0xFF10B981).copy(alpha = 0.4f), RoundedCornerShape(14.dp))
+                                .clickable { onNavigatePlayPoints() }
+                                .testTag("store_play_points_callout"),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFF062E22))
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(14.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .background(Color(0xFF10B981), CircleShape),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Loyalty,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = "Google Play Points Eligible",
+                                        color = Color(0xFF34D399),
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        text = "Exchange Play Points for $1 to $40 OFF discounts",
+                                        color = Color(0xFFA7F3D0),
+                                        fontSize = 10.sp
+                                    )
+                                }
                                 Text(
-                                    text = "Have Google Play Points?",
-                                    color = Color(0xFF6EE7B7),
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    text = "Redeem coupons up to $40 OFF on Google Play",
-                                    color = SpaceTextSecondary,
-                                    fontSize = 11.sp
+                                    text = "REWARDS →",
+                                    color = DiamondCyan,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.ExtraBold
                                 )
                             }
-                            Text(
-                                text = "VIEW →",
-                                color = CyberCyan,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Category Filter Chips
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            StoreFilterChip(
+                                label = "ALL (${CoinPackages.ALL.size})",
+                                isSelected = activeCategory == "ALL",
+                                onClick = { activeCategory = "ALL" },
+                                modifier = Modifier.weight(1f)
+                            )
+                            StoreFilterChip(
+                                label = "POPULAR",
+                                isSelected = activeCategory == "POPULAR",
+                                onClick = { activeCategory = "POPULAR" },
+                                modifier = Modifier.weight(1f)
+                            )
+                            StoreFilterChip(
+                                label = "VAULT",
+                                isSelected = activeCategory == "VAULT",
+                                onClick = { activeCategory = "VAULT" },
+                                modifier = Modifier.weight(1f)
                             )
                         }
-                    }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
 
-                    // Mode Selection: Google Play Billing vs Test Development Provider
-                    Surface(
-                        color = SpaceCardBg,
-                        shape = RoundedCornerShape(12.dp),
-                        border = BorderStroke(1.dp, SpaceCardBorder),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                        // Provider Toggle (Play Billing vs Dev Test Provider)
+                        Surface(
+                            color = SpaceCardBg,
+                            shape = RoundedCornerShape(12.dp),
+                            border = BorderStroke(1.dp, SpaceCardBorder),
+                            shadowElevation = 1.dp,
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-                            Column {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(
                                         imageVector = Icons.Default.Payment,
                                         contentDescription = null,
-                                        tint = if (isTestPaymentMode) NeonAmber else CyberCyan,
+                                        tint = if (isTestPaymentMode) NeonAmber else DiamondCyan,
                                         modifier = Modifier.size(16.dp)
                                     )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        text = if (isTestPaymentMode) "DEV TEST PAYMENT MODE" else "GOOGLE PLAY BILLING",
-                                        color = if (isTestPaymentMode) NeonAmber else CyberCyan,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Column {
+                                        Text(
+                                            text = if (isTestPaymentMode) "DEV TEST PAYMENT PIPELINE" else "GOOGLE PLAY BILLING",
+                                            color = if (isTestPaymentMode) NeonAmber else DiamondCyan,
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Text(
+                                            text = if (isTestPaymentMode) "Verifies token & records local ledger" else "Google Play official billing service",
+                                            color = SpaceTextMuted,
+                                            fontSize = 9.sp
+                                        )
+                                    }
                                 }
-                                Text(
-                                    text = if (isTestPaymentMode) "Simulates full backend verification & ledger" else "Production Play Billing architecture",
-                                    color = SpaceTextMuted,
-                                    fontSize = 10.sp
+
+                                Switch(
+                                    checked = isTestPaymentMode,
+                                    onCheckedChange = { onToggleTestPayment() },
+                                    colors = SwitchDefaults.colors(
+                                        checkedThumbColor = NeonAmber,
+                                        checkedTrackColor = Color(0xFF78350F),
+                                        uncheckedThumbColor = DiamondCyan,
+                                        uncheckedTrackColor = DiamondBg
+                                    ),
+                                    modifier = Modifier.testTag("payment_mode_switch")
                                 )
                             }
-
-                            Switch(
-                                checked = isTestPaymentMode,
-                                onCheckedChange = { onToggleTestPayment() },
-                                colors = SwitchDefaults.colors(
-                                    checkedThumbColor = NeonAmber,
-                                    checkedTrackColor = Color(0xFF78350F),
-                                    uncheckedThumbColor = CyberCyan,
-                                    uncheckedTrackColor = Color(0xFF0C4A6E)
-                                ),
-                                modifier = Modifier.testTag("payment_mode_switch")
-                            )
                         }
+
+                        Spacer(modifier = Modifier.height(4.dp))
                     }
+                }
 
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    // Formula verification notice
-                    Text(
-                        text = "EXACT AUTHORITATIVE FORMULA: COINS = DOLLARS × 100 + 1",
-                        color = SpaceTextMuted,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        letterSpacing = 0.5.sp,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
+                // 20 Diamond Packages Grid
+                items(filteredPackages) { pkg ->
+                    val isSelected = selectedPackage?.productId == pkg.productId
+                    DiamondPackageCard(
+                        pkg = pkg,
+                        isSelected = isSelected,
+                        isTestPaymentMode = isTestPaymentMode,
+                        isPurchasing = isPurchasing,
+                        onClick = {
+                            selectedPackage = pkg
+                            onPurchasePackage(pkg)
+                        }
                     )
                 }
             }
-
-            // The 19 Packages
-            items(CoinPackages.ALL) { pkg ->
-                CoinPackageCard(
-                    pkg = pkg,
-                    isTestPaymentMode = isTestPaymentMode,
-                    isPurchasing = isPurchasing,
-                    onClick = { onPurchasePackage(pkg) }
-                )
-            }
         }
 
-        // Purchase Feedback Modal / Banner
+        // ============================================================
+        // PURCHASE STATUS & FEEDBACK FLOATING PANEL
+        // ============================================================
         AnimatedVisibility(
-            visible = purchaseFeedback != null,
+            visible = purchaseFeedback != null || isPurchasing,
             enter = fadeIn(),
-            exit = fadeOut()
+            exit = fadeOut(),
+            modifier = Modifier.align(Alignment.BottomCenter)
         ) {
             Surface(
-                color = SpaceCardBg,
-                shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-                border = BorderStroke(1.dp, CyberCyan),
+                color = SpaceCardElevated,
+                shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
+                border = BorderStroke(1.5.dp, DiamondCyan),
+                shadowElevation = 12.dp,
                 modifier = Modifier
                     .fillMaxWidth()
                     .testTag("purchase_feedback_panel")
             ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    if (isPurchasing) {
-                        CircularProgressIndicator(
-                            color = CyberCyan,
-                            modifier = Modifier.size(24.dp),
-                            strokeWidth = 2.dp
-                        )
-                    } else {
-                        Icon(
-                            imageVector = Icons.Default.CheckCircle,
-                            contentDescription = null,
-                            tint = if (purchaseFeedback?.contains("SUCCESS") == true) LaserGreen else NeonAmber,
-                            modifier = Modifier.size(24.dp)
-                        )
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            if (isPurchasing) {
+                                CircularProgressIndicator(
+                                    color = DiamondCyan,
+                                    modifier = Modifier.size(24.dp),
+                                    strokeWidth = 2.5.dp
+                                )
+                            } else {
+                                val isSuccess = purchaseFeedback?.contains("SUCCESS", ignoreCase = true) == true
+                                Icon(
+                                    imageVector = if (isSuccess) Icons.Default.CheckCircle else Icons.Default.ErrorOutline,
+                                    contentDescription = null,
+                                    tint = if (isSuccess) LaserGreen else NeonAmber,
+                                    modifier = Modifier.size(26.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Text(
+                                    text = if (isPurchasing) "VERIFYING GOOGLE PLAY PURCHASE..." else "PURCHASE STATUS",
+                                    color = SpaceTextPrimary,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Black
+                                )
+                                Text(
+                                    text = purchaseFeedback ?: "Processing digital order securely...",
+                                    color = SpaceTextSecondary,
+                                    fontSize = 11.sp,
+                                    lineHeight = 14.sp
+                                )
+                            }
+                        }
+
+                        if (!isPurchasing) {
+                            IconButton(
+                                onClick = onClearFeedback,
+                                modifier = Modifier.size(32.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Dismiss",
+                                    tint = SpaceTextSecondary
+                                )
+                            }
+                        }
                     }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = purchaseFeedback ?: "",
-                            color = SpaceTextPrimary,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                    if (!isPurchasing) {
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "DISMISS",
-                            color = CyberCyan,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
+
+                    if (!isPurchasing && onNavigateTransactions != null) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Row(
                             modifier = Modifier
-                                .clickable { onClearFeedback() }
-                                .padding(6.dp)
-                        )
+                                .fillMaxWidth()
+                                .clickable { onNavigateTransactions() }
+                                .padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ReceiptLong,
+                                contentDescription = null,
+                                tint = DiamondCyan,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "VIEW IN TRANSACTION HISTORY",
+                                color = DiamondCyan,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
             }
@@ -281,43 +447,81 @@ fun CoinStoreScreen(
 }
 
 @Composable
-private fun CoinPackageCard(
+private fun StoreFilterChip(
+    label: String,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        color = if (isSelected) DiamondCyan else SpaceCardBg,
+        shape = RoundedCornerShape(10.dp),
+        border = BorderStroke(1.dp, if (isSelected) DiamondCyan else SpaceCardBorder),
+        shadowElevation = if (isSelected) 3.dp else 1.dp,
+        modifier = modifier
+            .height(34.dp)
+            .clickable(onClick = onClick)
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = label,
+                color = if (isSelected) Color(0xFF090D16) else SpaceTextSecondary,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = 0.5.sp
+            )
+        }
+    }
+}
+
+@Composable
+private fun DiamondPackageCard(
     pkg: CoinPackage,
+    isSelected: Boolean,
     isTestPaymentMode: Boolean,
     isPurchasing: Boolean,
     onClick: () -> Unit
 ) {
     val borderColor = when {
+        isSelected -> DiamondCyan
         pkg.isBestValue -> NeonGold
-        pkg.isPopular -> CyberCyan
-        pkg.badge != null -> Color(0xFF38BDF8)
+        pkg.isPopular -> DiamondCyan
+        pkg.badge != null -> DiamondLight
         else -> SpaceCardBorder
     }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
-            .border(1.2.dp, borderColor, RoundedCornerShape(14.dp))
+            .clip(RoundedCornerShape(16.dp))
+            .shadow(
+                elevation = if (isSelected) 8.dp else 3.dp,
+                shape = RoundedCornerShape(16.dp),
+                spotColor = if (isSelected) DiamondCyan else Color.Black
+            )
+            .border(if (isSelected) 2.dp else 1.dp, borderColor, RoundedCornerShape(16.dp))
             .clickable(enabled = !isPurchasing, onClick = onClick)
             .testTag("package_${pkg.productId}"),
         colors = CardDefaults.cardColors(containerColor = SpaceCardBg)
     ) {
         Column(
-            modifier = Modifier.padding(14.dp),
+            modifier = Modifier.padding(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Optional Badge
+            // Optional Badge Header
             if (pkg.badge != null) {
                 Surface(
-                    color = if (pkg.isBestValue) NeonGold else CyberCyan,
+                    color = if (pkg.isBestValue) NeonGold else Color(0xFF0284C7),
                     shape = RoundedCornerShape(4.dp),
                     modifier = Modifier.padding(bottom = 6.dp)
                 ) {
                     Text(
                         text = pkg.badge,
-                        color = Color(0xFF060913),
-                        fontSize = 9.sp,
+                        color = if (pkg.isBestValue) Color(0xFF1E1B4B) else Color.White,
+                        fontSize = 8.5.sp,
                         fontWeight = FontWeight.Black,
                         modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                     )
@@ -326,55 +530,56 @@ private fun CoinPackageCard(
                 Spacer(modifier = Modifier.height(18.dp))
             }
 
-            // Coin Icon
+            // 3D Diamond Visual
             Box(
                 modifier = Modifier
-                    .size(44.dp)
-                    .background(Color(0xFF1E293B), CircleShape)
-                    .border(1.dp, NeonGold.copy(alpha = 0.5f), CircleShape),
+                    .size(46.dp)
+                    .shadow(4.dp, CircleShape, spotColor = DiamondCyan.copy(alpha = 0.4f)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.MonetizationOn,
-                    contentDescription = null,
-                    tint = NeonGold,
-                    modifier = Modifier.size(26.dp)
-                )
+                TobiDiamond3D(size = 42.dp, animated = isSelected)
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Coin Amount
+            // Diamond Quantity (e.g., 501 Diamonds)
             Text(
-                text = "%,d".format(pkg.coinAmount),
+                text = "%,d".format(pkg.diamondAmount),
                 color = SpaceTextPrimary,
-                fontSize = 18.sp,
+                fontSize = 19.sp,
                 fontWeight = FontWeight.Black
             )
             Text(
-                text = "COINS",
-                color = NeonGold,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
+                text = "DIAMONDS",
+                color = DiamondCyan,
+                fontSize = 9.sp,
+                fontWeight = FontWeight.ExtraBold,
                 letterSpacing = 1.sp
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
-            // Price Button Style Pill
-            Surface(
-                color = if (isTestPaymentMode) Color(0xFF78350F) else Color(0xFF00363D),
-                shape = RoundedCornerShape(8.dp),
-                border = BorderStroke(1.dp, if (isTestPaymentMode) NeonAmber else CyberCyan),
-                modifier = Modifier.fillMaxWidth()
+            // Price Pill Button
+            val priceGradient = if (isSelected) {
+                Brush.horizontalGradient(listOf(Color(0xFF00E5FF), Color(0xFF0284C7)))
+            } else {
+                Brush.horizontalGradient(listOf(Color(0xFF1E293B), Color(0xFF172033)))
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(34.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(priceGradient)
+                    .border(1.dp, if (isSelected) DiamondCyan else SpaceCardBorder, RoundedCornerShape(8.dp)),
+                contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = pkg.formattedPrice,
-                    color = if (isTestPaymentMode) NeonAmber else CyberCyan,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(vertical = 6.dp)
+                    color = if (isSelected) Color(0xFF090D16) else SpaceTextPrimary,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.ExtraBold
                 )
             }
 
@@ -382,7 +587,7 @@ private fun CoinPackageCard(
             Text(
                 text = pkg.productId,
                 color = SpaceTextMuted,
-                fontSize = 9.sp
+                fontSize = 8.sp
             )
         }
     }

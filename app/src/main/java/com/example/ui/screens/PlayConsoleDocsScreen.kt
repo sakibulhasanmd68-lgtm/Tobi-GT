@@ -31,14 +31,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ui.components.TobiGtHeader
-import com.example.ui.theme.CyberCyan
+import com.example.ui.theme.DiamondBg
+import com.example.ui.theme.DiamondBorder
+import com.example.ui.theme.DiamondCyan
 import com.example.ui.theme.LaserGreen
 import com.example.ui.theme.NeonAmber
 import com.example.ui.theme.NeonGold
@@ -76,15 +78,16 @@ fun PlayConsoleDocsScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(16.dp))
-                        .border(1.dp, Color(0xFF10B981).copy(alpha = 0.5f), RoundedCornerShape(16.dp)),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF064E3B).copy(alpha = 0.35f))
+                        .shadow(2.dp, RoundedCornerShape(16.dp), spotColor = Color(0x15000000))
+                        .border(1.dp, DiamondBorder, RoundedCornerShape(16.dp)),
+                    colors = CardDefaults.cardColors(containerColor = SpaceCardBg)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = Icons.Default.Loyalty,
                                 contentDescription = null,
-                                tint = Color(0xFF34D399),
+                                tint = DiamondCyan,
                                 modifier = Modifier.size(24.dp)
                             )
                             Spacer(modifier = Modifier.width(10.dp))
@@ -97,7 +100,7 @@ fun PlayConsoleDocsScreen(
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Step-by-step developer instructions for configuring official Play Points coupon promotions in Google Play Console for Tobi GT.",
+                            text = "Step-by-step developer instructions for configuring official Play Points coupon promotions in Google Play Console for TOBI GT.",
                             color = SpaceTextSecondary,
                             fontSize = 12.sp,
                             lineHeight = 16.sp
@@ -110,7 +113,7 @@ fun PlayConsoleDocsScreen(
                 DocSectionCard(
                     stepNumber = "1",
                     title = "Console Navigation",
-                    body = "1. Sign in to your Google Play Console account.\n2. Select the Tobi GT application (package: com.aistudio.tobigt.skyg).\n3. In the left-hand navigation menu, scroll down to the 'Monetize with Play' section.\n4. Click 'Products' → Select 'Play Points'."
+                    body = "1. Sign in to your Google Play Console account.\n2. Select the TOBI GT application (package: com.aistudio.tobigt.skyg).\n3. In the left-hand navigation menu, scroll down to the 'Monetize with Play' section.\n4. Click 'Products' → Select 'Play Points'."
                 )
             }
 
@@ -118,7 +121,7 @@ fun PlayConsoleDocsScreen(
                 DocSectionCard(
                     stepNumber = "2",
                     title = "Promotion Type Selection",
-                    body = "1. Click 'Create promotion'.\n2. Under Promotion Type, select 'Coupon promotion'.\n3. This allows Google Play users to spend their accrued Google Play Points to receive discount coupons redeemable on Tobi GT in-app Coin packages."
+                    body = "1. Click 'Create promotion'.\n2. Under Promotion Type, select 'Coupon promotion'.\n3. This allows Google Play users to spend their accrued Google Play Points to receive discount coupons redeemable on TOBI GT in-app Diamond packages."
                 )
             }
 
@@ -134,7 +137,7 @@ fun PlayConsoleDocsScreen(
                 DocSectionCard(
                     stepNumber = "4",
                     title = "Product Association & Minimum Purchase",
-                    body = "• Associate coupons with eligible Coin SKUs (e.g. tobi_coins_101 to tobi_coins_100001).\n• Set Minimum Purchase threshold if applicable (e.g., a $5 coupon requires a purchase of at least $5.01, perfectly pairing with the $5.01 = 501 Coins package).\n• Note that Google Play enforces coupon application at Google Play checkout automatically."
+                    body = "• Associate coupons with eligible Diamond SKUs (e.g. tobi_coins_101 to tobi_coins_100001).\n• Set Minimum Purchase threshold if applicable (e.g., a $5 coupon requires a purchase of at least $5.01, perfectly pairing with the $5.01 = 501 Diamonds package).\n• Note that Google Play enforces coupon application at Google Play checkout automatically."
                 )
             }
 
@@ -150,7 +153,7 @@ fun PlayConsoleDocsScreen(
                 DocSectionCard(
                     stepNumber = "6",
                     title = "Google Play Purchase & Verification Flow",
-                    body = "1. User redeems coupon in Google Play Store Points tab.\n2. In Tobi GT Coin Store, user taps on an in-app package.\n3. Google Play Billing purchase bottom sheet opens.\n4. Google Play automatically presents the discount coupon to the user.\n5. Upon completion, Google Play returns standard purchaseToken and orderId.\n6. Tobi GT backend verifies receipt, performs duplicate check, credits full authoritative Coins, and logs transaction."
+                    body = "1. User redeems coupon in Google Play Store Points tab.\n2. In TOBI GT Diamond Store, user taps on an in-app package.\n3. Google Play Billing purchase bottom sheet opens.\n4. Google Play automatically presents the discount coupon to the user.\n5. Upon completion, Google Play returns standard purchaseToken and orderId.\n6. TOBI GT backend verifies receipt, performs duplicate check, credits full authoritative Diamonds, and logs transaction."
                 )
             }
         }
@@ -167,6 +170,7 @@ private fun DocSectionCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
+            .shadow(1.dp, RoundedCornerShape(12.dp), spotColor = Color(0x10000000))
             .border(1.dp, SpaceCardBorder, RoundedCornerShape(12.dp)),
         colors = CardDefaults.cardColors(containerColor = SpaceCardBg)
     ) {
@@ -175,13 +179,13 @@ private fun DocSectionCard(
                 Box(
                     modifier = Modifier
                         .size(26.dp)
-                        .background(CyberCyan.copy(alpha = 0.15f), CircleShape)
-                        .border(1.dp, CyberCyan, CircleShape),
+                        .background(DiamondBg, CircleShape)
+                        .border(1.dp, DiamondCyan, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = stepNumber,
-                        color = CyberCyan,
+                        color = DiamondCyan,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -204,3 +208,4 @@ private fun DocSectionCard(
         }
     }
 }
+

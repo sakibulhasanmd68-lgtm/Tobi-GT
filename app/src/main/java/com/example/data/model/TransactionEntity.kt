@@ -28,4 +28,7 @@ data class TransactionEntity(
     val createdTimestamp: Long = System.currentTimeMillis(),
     val verifiedTimestamp: Long = System.currentTimeMillis(),
     val creditedTimestamp: Long = System.currentTimeMillis()
-)
+) {
+    val diamondAmount: Long
+        get() = coinAmount
+}

@@ -33,18 +33,26 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ui.components.CyberButton
+import com.example.ui.components.TobiDiamond3D
 import com.example.ui.components.TobiGtHeader
-import com.example.ui.theme.CyberCyan
-import com.example.ui.theme.NeonAmber
+import com.example.ui.theme.DiamondBg
+import com.example.ui.theme.DiamondBorder
+import com.example.ui.theme.DiamondCyan
+import com.example.ui.theme.DiamondLight
+import com.example.ui.theme.LaserGreen
 import com.example.ui.theme.SpaceCardBg
 import com.example.ui.theme.SpaceCardBorder
+import com.example.ui.theme.SpaceCardElevated
 import com.example.ui.theme.SpaceDarkBg
 import com.example.ui.theme.SpaceTextMuted
 import com.example.ui.theme.SpaceTextPrimary
@@ -65,7 +73,7 @@ fun ContactScreen(
             .testTag("contact_screen")
     ) {
         TobiGtHeader(
-            title = "CONTACT SUPPORT",
+            title = "DEVELOPER CONTACT",
             coins = coins,
             onBack = onBack
         )
@@ -79,66 +87,118 @@ fun ContactScreen(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .border(1.dp, SpaceCardBorder, RoundedCornerShape(16.dp)),
+                        .clip(RoundedCornerShape(18.dp))
+                        .shadow(4.dp, RoundedCornerShape(18.dp), spotColor = Color(0x33000000))
+                        .border(1.2.dp, DiamondBorder, RoundedCornerShape(18.dp)),
                     colors = CardDefaults.cardColors(containerColor = SpaceCardBg)
                 ) {
                     Column(
-                        modifier = Modifier.padding(20.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                Brush.verticalGradient(
+                                    listOf(DiamondBg, SpaceCardBg)
+                                )
+                            )
+                            .padding(20.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(56.dp)
-                                .background(Color(0xFF1E293B), CircleShape)
-                                .border(1.5.dp, CyberCyan, CircleShape),
+                                .size(60.dp)
+                                .background(SpaceCardElevated, CircleShape)
+                                .border(1.5.dp, DiamondCyan, CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Default.SupportAgent,
                                 contentDescription = null,
-                                tint = CyberCyan,
-                                modifier = Modifier.size(30.dp)
+                                tint = DiamondCyan,
+                                modifier = Modifier.size(32.dp)
                             )
                         }
 
                         Spacer(modifier = Modifier.height(14.dp))
 
                         Text(
-                            text = "Tobi GT Pilot Operations Center",
+                            text = "TOBI GT",
                             color = SpaceTextPrimary,
-                            fontSize = 16.sp,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Black
+                        )
+
+                        Text(
+                            text = "Developed by Tobi",
+                            color = DiamondCyan,
+                            fontSize = 13.sp,
                             fontWeight = FontWeight.Bold
                         )
 
                         Text(
-                            text = "We are here to assist with billing, flight telemetry, and feature feedback.",
+                            text = "For support inquiries, questions about diamond fulfillment, refund assistance, or bug reports, email our developer directly.",
                             color = SpaceTextSecondary,
                             fontSize = 12.sp,
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                            modifier = Modifier.padding(top = 4.dp, bottom = 16.dp)
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(top = 8.dp, bottom = 16.dp)
                         )
 
                         // Anonymous Pilot Reference ID
                         Surface(
-                            color = Color(0xFF0F172A),
-                            shape = RoundedCornerShape(8.dp),
+                            color = SpaceCardElevated,
+                            shape = RoundedCornerShape(10.dp),
                             border = BorderStroke(1.dp, SpaceCardBorder),
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Column(modifier = Modifier.padding(10.dp)) {
+                            Column(modifier = Modifier.padding(12.dp)) {
                                 Text(
-                                    text = "YOUR ANONYMOUS REFERENCE ID:",
-                                    color = NeonAmber,
+                                    text = "YOUR ANONYMOUS PILOT ID:",
+                                    color = DiamondCyan,
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
-                                    text = userId,
+                                    text = userId.ifEmpty { "Generating Pilot ID..." },
                                     color = SpaceTextPrimary,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.SemiBold
                                 )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        // Developer Email Card
+                        Surface(
+                            color = SpaceCardElevated,
+                            shape = RoundedCornerShape(10.dp),
+                            border = BorderStroke(1.dp, DiamondBorder),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Email,
+                                    contentDescription = null,
+                                    tint = DiamondCyan,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Column {
+                                    Text(
+                                        text = "DEVELOPER EMAIL",
+                                        color = SpaceTextMuted,
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        text = "sakibulhasanmd69@gmail.com",
+                                        color = SpaceTextPrimary,
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
                             }
                         }
 
@@ -148,63 +208,69 @@ fun ContactScreen(
                             text = "SEND SUPPORT EMAIL",
                             onClick = {
                                 val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
-                                    data = Uri.parse("mailto:support@tobigtgame.com")
-                                    putExtra(Intent.EXTRA_SUBJECT, "Tobi GT Support Inquiry [Pilot ID: $userId]")
+                                    data = Uri.parse("mailto:sakibulhasanmd69@gmail.com")
+                                    putExtra(Intent.EXTRA_SUBJECT, "[TOBI GT Support] Pilot ID: $userId")
                                 }
                                 try {
                                     context.startActivity(emailIntent)
-                                } catch (_: Exception) {}
-                            },
-                            icon = Icons.Default.Email,
-                            isPrimary = true,
-                            testTag = "contact_email_btn"
+                                } catch (_: Exception) {
+                                    // Fallback if no email client
+                                }
+                            }
                         )
                     }
                 }
             }
 
+            // FAQs
             item {
-                Surface(
-                    color = SpaceCardBg,
-                    shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, SpaceCardBorder),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = "FREQUENTLY ASKED QUESTIONS",
-                            color = SpaceTextMuted,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 1.sp
-                        )
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Text(
-                            text = "Q: How do I restore purchases?",
-                            color = SpaceTextPrimary,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = "A: Tobi GT automatically synchronizes purchase tokens with the authoritative local ledger upon store opening.",
-                            color = SpaceTextSecondary,
-                            fontSize = 11.sp,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
-                        Text(
-                            text = "Q: What happens if I switch devices?",
-                            color = SpaceTextPrimary,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = "A: Because Tobi GT preserves your total privacy with no registration or login, your pilot profile is linked to your device. Cloud backup through Android system backup preserves your anonymous user ID.",
-                            color = SpaceTextSecondary,
-                            fontSize = 11.sp
-                        )
-                    }
-                }
+                Text(
+                    text = "FREQUENTLY ASKED QUESTIONS",
+                    color = DiamondCyan,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 1.sp
+                )
             }
+
+            item {
+                FaqCard(
+                    question = "How are Diamond purchases credited?",
+                    answer = "Purchases are securely fulfilled via Google Play Billing. As soon as the transaction is confirmed, diamonds are added immediately to your balance and permanently recorded in your local transaction ledger."
+                )
+            }
+
+            item {
+                FaqCard(
+                    question = "How do Google Play Points work in Tobi GT?",
+                    answer = "Eligible players can redeem Play Points for Tobi GT discount coupons in Google Play. The discount is automatically deducted when completing your in-game purchase."
+                )
+            }
+
+            item {
+                FaqCard(
+                    question = "What if my purchase doesn't arrive?",
+                    answer = "Tap 'Transactions' in the menu to view all verified orders. If a purchase is missing, email sakibulhasanmd69@gmail.com with your Pilot ID and Google Play order receipt for immediate manual audit."
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun FaqCard(question: String, answer: String) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .shadow(1.dp, RoundedCornerShape(12.dp), spotColor = Color(0x10000000))
+            .border(1.dp, SpaceCardBorder, RoundedCornerShape(12.dp)),
+        colors = CardDefaults.cardColors(containerColor = SpaceCardBg)
+    ) {
+        Column(modifier = Modifier.padding(14.dp)) {
+            Text(text = question, color = DiamondCyan, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(text = answer, color = SpaceTextSecondary, fontSize = 11.sp, lineHeight = 16.sp)
         }
     }
 }

@@ -31,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -38,11 +39,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.repository.LeaderboardEntry
 import com.example.ui.components.TobiGtHeader
-import com.example.ui.theme.CyberCyan
+import com.example.ui.theme.DiamondBg
+import com.example.ui.theme.DiamondBorder
+import com.example.ui.theme.DiamondCyan
 import com.example.ui.theme.NeonAmber
 import com.example.ui.theme.NeonGold
 import com.example.ui.theme.SpaceCardBg
 import com.example.ui.theme.SpaceCardBorder
+import com.example.ui.theme.SpaceCardElevated
 import com.example.ui.theme.SpaceDarkBg
 import com.example.ui.theme.SpaceTextMuted
 import com.example.ui.theme.SpaceTextPrimary
@@ -73,13 +77,13 @@ fun LeaderboardScreen(
         ) {
             item {
                 Surface(
-                    color = Color(0xFF131F38),
+                    color = DiamondBg,
                     shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, Color(0xFF1E3A8A)),
+                    border = BorderStroke(1.dp, DiamondBorder),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
-                        modifier = Modifier.padding(12.dp),
+                        modifier = Modifier.padding(14.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
@@ -88,7 +92,7 @@ fun LeaderboardScreen(
                             tint = NeonGold,
                             modifier = Modifier.size(24.dp)
                         )
-                        Spacer(modifier = Modifier.width(10.dp))
+                        Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text(
                                 text = "GLOBAL ACE PILOTS RANKING",
@@ -117,7 +121,7 @@ fun LeaderboardScreen(
 private fun LeaderboardRow(entry: LeaderboardEntry) {
     val rankBadgeColor = when (entry.rank) {
         1 -> NeonGold
-        2 -> Color(0xFFE2E8F0)
+        2 -> Color(0xFF64748B)
         3 -> Color(0xFFD97706)
         else -> SpaceTextMuted
     }
@@ -126,14 +130,15 @@ private fun LeaderboardRow(entry: LeaderboardEntry) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
+            .shadow(1.dp, RoundedCornerShape(12.dp), spotColor = Color(0x10000000))
             .border(
                 1.dp,
-                if (entry.isCurrentUser) CyberCyan else SpaceCardBorder,
+                if (entry.isCurrentUser) DiamondCyan else SpaceCardBorder,
                 RoundedCornerShape(12.dp)
             )
             .testTag("leaderboard_entry_${entry.rank}"),
         colors = CardDefaults.cardColors(
-            containerColor = if (entry.isCurrentUser) Color(0xFF0C2438) else SpaceCardBg
+            containerColor = if (entry.isCurrentUser) Color(0xFF0F2338) else SpaceCardBg
         )
     ) {
         Row(
@@ -144,7 +149,7 @@ private fun LeaderboardRow(entry: LeaderboardEntry) {
             Box(
                 modifier = Modifier
                     .size(32.dp)
-                    .background(Color(0xFF1E293B), CircleShape)
+                    .background(SpaceCardElevated, CircleShape)
                     .border(1.dp, rankBadgeColor, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
@@ -163,19 +168,19 @@ private fun LeaderboardRow(entry: LeaderboardEntry) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = entry.displayName,
-                        color = if (entry.isCurrentUser) CyberCyan else SpaceTextPrimary,
+                        color = if (entry.isCurrentUser) DiamondCyan else SpaceTextPrimary,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold
                     )
                     if (entry.isCurrentUser) {
                         Spacer(modifier = Modifier.width(6.dp))
                         Surface(
-                            color = CyberCyan,
+                            color = DiamondCyan,
                             shape = RoundedCornerShape(4.dp)
                         ) {
                             Text(
                                 text = "YOU",
-                                color = Color(0xFF060913),
+                                color = Color(0xFF090D16),
                                 fontSize = 9.sp,
                                 fontWeight = FontWeight.ExtraBold,
                                 modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.dp)
@@ -193,10 +198,11 @@ private fun LeaderboardRow(entry: LeaderboardEntry) {
             // Score
             Text(
                 text = "%,d".format(entry.score),
-                color = if (entry.rank <= 3) NeonGold else SpaceTextSecondary,
+                color = if (entry.rank <= 3) NeonGold else SpaceTextPrimary,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.ExtraBold
             )
         }
     }
 }
+

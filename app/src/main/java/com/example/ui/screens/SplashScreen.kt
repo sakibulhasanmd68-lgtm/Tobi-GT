@@ -2,8 +2,6 @@ package com.example.ui.screens
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -11,142 +9,148 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.ui.theme.CyberCyan
-import com.example.ui.theme.NeonGold
+import com.example.ui.components.TobiDiamond3D
+import com.example.ui.theme.DiamondBg
+import com.example.ui.theme.DiamondBorder
+import com.example.ui.theme.DiamondCyan
+import com.example.ui.theme.SpaceCardBg
+import com.example.ui.theme.SpaceCardElevated
 import com.example.ui.theme.SpaceDarkBg
 import com.example.ui.theme.SpaceTextMuted
 import com.example.ui.theme.SpaceTextPrimary
-import com.example.ui.theme.SpaceTextSecondary
 import kotlinx.coroutines.delay
 
 @Composable
 fun SplashScreen(onFinish: () -> Unit) {
-    val scale = remember { Animatable(0.7f) }
+    val scale = remember { Animatable(0.85f) }
     val alpha = remember { Animatable(0f) }
 
     LaunchedEffect(Unit) {
-        scale.animateTo(1f, animationSpec = tween(700, easing = FastOutSlowInEasing))
-        alpha.animateTo(1f, animationSpec = tween(500))
-        delay(1200)
+        scale.animateTo(1f, animationSpec = tween(650, easing = FastOutSlowInEasing))
+        alpha.animateTo(1f, animationSpec = tween(450))
+        delay(1150)
         onFinish()
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(SpaceDarkBg)
+            .background(
+                Brush.verticalGradient(
+                    listOf(
+                        SpaceDarkBg,
+                        Color(0xFF0C1424),
+                        SpaceDarkBg
+                    )
+                )
+            )
             .testTag("splash_screen"),
         contentAlignment = Alignment.Center
     ) {
+        // Subtle ambient neon diamond glow
+        Canvas(modifier = Modifier.size(320.dp)) {
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        DiamondCyan.copy(alpha = 0.12f),
+                        Color.Transparent
+                    ),
+                    center = center,
+                    radius = size.minDimension / 2f
+                )
+            )
+        }
+
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier.scale(scale.value)
+            modifier = Modifier
+                .scale(scale.value)
+                .alpha(alpha.value)
         ) {
-            // Futuristic Jet Insignia Canvas
+            // Modern 3D Diamond Emblem with Dark Card Frame
             Box(
                 modifier = Modifier
-                    .size(130.dp)
-                    .background(Color(0xFF0F172A), CircleShape)
-                    .border(2.dp, CyberCyan, CircleShape),
+                    .size(118.dp)
+                    .shadow(24.dp, CircleShape, spotColor = DiamondCyan.copy(alpha = 0.4f))
+                    .background(SpaceCardBg, CircleShape)
+                    .border(2.dp, DiamondBorder, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Canvas(modifier = Modifier.size(90.dp)) {
-                    val w = size.width
-                    val h = size.height
-
-                    // Jet body
-                    val jetPath = Path().apply {
-                        moveTo(w * 0.5f, h * 0.1f)
-                        lineTo(w * 0.58f, h * 0.38f)
-                        lineTo(w * 0.88f, h * 0.65f)
-                        lineTo(w * 0.62f, h * 0.72f)
-                        lineTo(w * 0.5f, h * 0.62f)
-                        lineTo(w * 0.38f, h * 0.72f)
-                        lineTo(w * 0.12f, h * 0.65f)
-                        lineTo(w * 0.42f, h * 0.38f)
-                        close()
-                    }
-                    drawPath(jetPath, color = CyberCyan)
-
-                    // Cockpit gold
-                    val cockpitPath = Path().apply {
-                        moveTo(w * 0.5f, h * 0.25f)
-                        lineTo(w * 0.54f, h * 0.42f)
-                        lineTo(w * 0.5f, h * 0.48f)
-                        lineTo(w * 0.46f, h * 0.42f)
-                        close()
-                    }
-                    drawPath(cockpitPath, color = NeonGold)
-
-                    // Thruster plume
-                    drawLine(
-                        color = Color(0xFF38BDF8),
-                        start = Offset(w * 0.5f, h * 0.66f),
-                        end = Offset(w * 0.5f, h * 0.88f),
-                        strokeWidth = 5f
-                    )
-                }
+                TobiDiamond3D(size = 72.dp, animated = true)
             }
 
             Spacer(modifier = Modifier.height(28.dp))
 
+            // App Title
             Text(
                 text = "TOBI GT",
-                color = CyberCyan,
-                fontSize = 38.sp,
+                color = SpaceTextPrimary,
+                fontSize = 40.sp,
                 fontWeight = FontWeight.Black,
-                letterSpacing = 6.sp
+                letterSpacing = 7.sp
             )
 
+            Spacer(modifier = Modifier.height(6.dp))
+
+            // Developer Subtitle
             Text(
-                text = "SUPRASONIC SKY BATTLE",
-                color = NeonGold,
-                fontSize = 12.sp,
+                text = "Developed by Tobi",
+                color = DiamondCyan,
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                letterSpacing = 3.sp
+                letterSpacing = 2.sp
             )
 
-            Spacer(modifier = Modifier.height(36.dp))
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Edition pill
+            Surface(
+                color = SpaceCardElevated,
+                shape = RoundedCornerShape(20.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, DiamondBorder)
+            ) {
+                Text(
+                    text = "DIAMOND EDITION • ACE PILOT",
+                    color = SpaceTextMuted,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 1.5.sp,
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 5.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(42.dp))
 
             CircularProgressIndicator(
-                color = CyberCyan,
-                modifier = Modifier.size(28.dp),
+                color = DiamondCyan,
+                modifier = Modifier.size(24.dp),
                 strokeWidth = 2.5.dp
-            )
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            Text(
-                text = "INITIALIZING SKY SYSTEMS...",
-                color = SpaceTextMuted,
-                fontSize = 11.sp,
-                letterSpacing = 1.5.sp
             )
         }
     }

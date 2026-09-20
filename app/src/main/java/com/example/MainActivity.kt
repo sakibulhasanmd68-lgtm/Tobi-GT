@@ -164,6 +164,8 @@ fun TobiGtApp(viewModel: MainViewModel) {
                         onToggleTestPayment = { viewModel.toggleTestPaymentMode() },
                         onNavigateAdmin = { viewModel.navigateTo(AppScreen.ADMIN_DASHBOARD) },
                         onNavigatePlayConsoleDocs = { viewModel.navigateTo(AppScreen.PLAY_CONSOLE_DOCS) },
+                        onNavigatePrivacyPolicy = { viewModel.navigateTo(AppScreen.PRIVACY_POLICY) },
+                        onNavigateContact = { viewModel.navigateTo(AppScreen.CONTACT) },
                         onBack = { viewModel.navigateTo(AppScreen.HOME) }
                     )
                 }

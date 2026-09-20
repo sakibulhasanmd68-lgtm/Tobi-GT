@@ -24,7 +24,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.MonetizationOn
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -47,10 +46,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.ui.theme.CyberCyan
+import com.example.ui.theme.DiamondBg
+import com.example.ui.theme.DiamondBlue
+import com.example.ui.theme.DiamondBorder
+import com.example.ui.theme.DiamondCyan
+import com.example.ui.theme.DiamondLight
 import com.example.ui.theme.NeonGold
 import com.example.ui.theme.SpaceCardBg
 import com.example.ui.theme.SpaceCardBorder
+import com.example.ui.theme.SpaceCardElevated
 import com.example.ui.theme.SpaceDarkBg
 import com.example.ui.theme.SpaceTextMuted
 import com.example.ui.theme.SpaceTextPrimary
@@ -64,7 +68,8 @@ fun TobiGtHeader(
     highScore: Int? = null
 ) {
     Surface(
-        color = SpaceDarkBg.copy(alpha = 0.95f),
+        color = SpaceCardBg,
+        shadowElevation = 4.dp,
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
@@ -81,13 +86,13 @@ fun TobiGtHeader(
                         modifier = Modifier
                             .testTag("back_button")
                             .size(40.dp)
-                            .background(SpaceCardBg, CircleShape)
-                            .border(1.dp, CyberCyan.copy(alpha = 0.5f), CircleShape)
+                            .background(SpaceCardElevated, CircleShape)
+                            .border(1.dp, SpaceCardBorder, CircleShape)
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
-                            tint = CyberCyan
+                            tint = SpaceTextPrimary
                         )
                     }
                     Spacer(modifier = Modifier.width(12.dp))
@@ -96,9 +101,9 @@ fun TobiGtHeader(
                     Text(
                         text = title,
                         color = SpaceTextPrimary,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp
+                        fontSize = 19.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 0.5.sp
                     )
                     if (highScore != null) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -110,7 +115,7 @@ fun TobiGtHeader(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "BEST: $highScore",
+                                text = "BEST: %,d".format(highScore),
                                 color = NeonGold,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.SemiBold
@@ -120,31 +125,26 @@ fun TobiGtHeader(
                 }
             }
 
-            // Coin Balance Pill
+            // Diamond Balance Pill with 3D Crystal Gem
             Surface(
-                color = SpaceCardBg,
+                color = DiamondBg,
                 shape = RoundedCornerShape(20.dp),
-                border = BorderStroke(1.dp, NeonGold.copy(alpha = 0.6f)),
+                border = BorderStroke(1.dp, DiamondBorder),
                 modifier = Modifier
-                    .shadow(4.dp, RoundedCornerShape(20.dp), spotColor = NeonGold)
+                    .shadow(4.dp, RoundedCornerShape(20.dp), spotColor = DiamondCyan.copy(alpha = 0.3f))
                     .testTag("header_coin_pill")
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.MonetizationOn,
-                        contentDescription = "Coins",
-                        tint = NeonGold,
-                        modifier = Modifier.size(18.dp)
-                    )
+                    TobiDiamond3D(size = 18.dp, animated = false)
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = "%,d".format(coins),
-                        color = NeonGold,
+                        color = DiamondCyan,
                         fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.ExtraBold
                     )
                 }
             }
@@ -164,21 +164,24 @@ fun CyberButton(
     testTag: String = "cyber_button"
 ) {
     val gradient = if (isPrimary) {
-        Brush.horizontalGradient(listOf(Color(0xFF00B4D8), Color(0xFF00F0FF)))
+        Brush.horizontalGradient(listOf(Color(0xFF0284C7), Color(0xFF00E5FF)))
     } else {
-        Brush.horizontalGradient(listOf(Color(0xFF1E293B), Color(0xFF334155)))
+        Brush.horizontalGradient(listOf(Color(0xFF172033), Color(0xFF1E293B)))
     }
 
-    val borderColor = if (isPrimary) CyberCyan else SpaceCardBorder
+    val borderColor = if (isPrimary) DiamondCyan else SpaceCardBorder
+    val textColor = if (isPrimary) Color(0xFF090D16) else SpaceTextPrimary
+    val iconColor = if (isPrimary) Color(0xFF090D16) else DiamondCyan
 
     Box(
         modifier = modifier
             .testTag(testTag)
             .fillMaxWidth()
             .height(52.dp)
-            .clip(RoundedCornerShape(12.dp))
+            .shadow(if (isPrimary && enabled) 6.dp else 2.dp, RoundedCornerShape(14.dp), spotColor = if (isPrimary) DiamondCyan else Color.Black)
+            .clip(RoundedCornerShape(14.dp))
             .background(if (enabled) gradient else Brush.horizontalGradient(listOf(Color(0xFF1F2937), Color(0xFF1F2937))))
-            .border(1.2.dp, if (enabled) borderColor else Color.DarkGray, RoundedCornerShape(12.dp))
+            .border(1.2.dp, if (enabled) borderColor else Color(0xFF374151), RoundedCornerShape(14.dp))
             .clickable(enabled = enabled, onClick = onClick)
             .padding(horizontal = 16.dp),
         contentAlignment = Alignment.Center
@@ -191,27 +194,27 @@ fun CyberButton(
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = if (isPrimary) Color(0xFF060913) else CyberCyan,
+                    tint = iconColor,
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
             }
             Text(
                 text = text,
-                color = if (isPrimary) Color(0xFF060913) else SpaceTextPrimary,
+                color = textColor,
                 fontSize = 15.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.sp
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = 0.5.sp
             )
             if (badge != null) {
                 Spacer(modifier = Modifier.width(8.dp))
                 Surface(
-                    color = NeonGold,
-                    shape = RoundedCornerShape(4.dp)
+                    color = if (isPrimary) Color(0xFF090D16) else DiamondBlue,
+                    shape = RoundedCornerShape(6.dp)
                 ) {
                     Text(
                         text = badge,
-                        color = Color(0xFF060913),
+                        color = if (isPrimary) DiamondCyan else Color.White,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.ExtraBold,
                         modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
@@ -225,18 +228,20 @@ fun CyberButton(
 @Composable
 fun GlowingCard(
     modifier: Modifier = Modifier,
-    borderColor: Color = CyberCyan.copy(alpha = 0.4f),
+    borderColor: Color = SpaceCardBorder,
     content: @Composable () -> Unit
 ) {
     Card(
         modifier = modifier
             .fillMaxWidth()
+            .shadow(4.dp, RoundedCornerShape(16.dp), spotColor = Color(0x33000000))
             .border(1.dp, borderColor, RoundedCornerShape(16.dp)),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = SpaceCardBg.copy(alpha = 0.9f))
+        colors = CardDefaults.cardColors(containerColor = SpaceCardBg)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             content()
         }
     }
 }
+

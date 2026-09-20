@@ -61,7 +61,10 @@ data class Enemy(
     val scoreValue: Int,
     val coinDropChance: Float,
     var fireCooldown: Int = 0
-)
+) {
+    val diamondDropChance: Float
+        get() = coinDropChance
+}
 
 data class PowerUp(
     val id: Long,
@@ -79,7 +82,12 @@ data class CoinDrop(
     var vy: Float = 2.2f,
     val value: Int = 1,
     val radius: Float = 14f
-)
+) {
+    val diamondValue: Int
+        get() = value
+}
+
+typealias DiamondDrop = CoinDrop
 
 data class Particle(
     var x: Float,
