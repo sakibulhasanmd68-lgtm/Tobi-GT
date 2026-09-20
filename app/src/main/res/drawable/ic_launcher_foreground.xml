@@ -1,0 +1,33 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Jet Fuselage / Wings centered inside safe zone (54,54) -->
+    <!-- Main Jet Body -->
+    <path
+        android:fillColor="#00F0FF"
+        android:pathData="M54,26 L60,46 L76,64 L60,68 L54,64 L48,68 L32,64 L48,46 Z" />
+    <!-- Center Core & Cockpit -->
+    <path
+        android:fillColor="#FFD700"
+        android:pathData="M54,34 L57,48 L54,54 L51,48 Z" />
+    <!-- Wing Thruster Plasma Trail -->
+    <path
+        android:fillColor="#38BDF8"
+        android:pathData="M50,68 L54,82 L58,68 L54,72 Z" />
+    <!-- Laser Cannons -->
+    <path
+        android:fillColor="#E0F2FE"
+        android:pathData="M40,52 L42,52 L42,66 L40,66 Z" />
+    <path
+        android:fillColor="#E0F2FE"
+        android:pathData="M66,52 L68,52 L68,66 L66,66 Z" />
+    <!-- Outer Wing Fin Accents -->
+    <path
+        android:fillColor="#38BDF8"
+        android:pathData="M28,68 L32,63 L34,67 Z" />
+    <path
+        android:fillColor="#38BDF8"
+        android:pathData="M80,68 L76,63 L74,67 Z" />
+</vector>

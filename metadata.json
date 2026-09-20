@@ -1,0 +1,6 @@
+{
+  "name": "Tobi GT",
+  "description": "Tobi GT futuristic arcade sky battle airplane combat game with coin store, missions, leaderboard, and Google Play Points rewards.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
